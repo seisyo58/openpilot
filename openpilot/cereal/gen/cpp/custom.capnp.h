@@ -208,6 +208,8 @@ enum class EventName_b8007ed8a646b5e6: uint16_t {
   E2E_CHIME,
   LANE_CHANGE_ROAD_EDGE,
   BIG_MODEL_READY,
+  NISSAN_PARKING_ACTIVE,
+  NISSAN_PARKING_REARM,
 };
 CAPNP_DECLARE_ENUM(EventName, b8007ed8a646b5e6);
 CAPNP_DECLARE_SCHEMA(80ae746ee2596b11);
@@ -4378,6 +4380,10 @@ public:
 
   inline float getSpeedLimit() const;
 
+  inline bool getNissanParkingActive() const;
+
+  inline bool getNissanParkingBlocked() const;
+
 private:
   ::capnp::_::StructReader _reader;
   template <typename, ::capnp::Kind>
@@ -4408,6 +4414,12 @@ public:
 
   inline float getSpeedLimit();
   inline void setSpeedLimit(float value);
+
+  inline bool getNissanParkingActive();
+  inline void setNissanParkingActive(bool value);
+
+  inline bool getNissanParkingBlocked();
+  inline void setNissanParkingBlocked(bool value);
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -8805,6 +8817,34 @@ inline float CarStateSP::Builder::getSpeedLimit() {
 inline void CarStateSP::Builder::setSpeedLimit(float value) {
   _builder.setDataField<float>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool CarStateSP::Reader::getNissanParkingActive() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<32>() * ::capnp::ELEMENTS);
+}
+
+inline bool CarStateSP::Builder::getNissanParkingActive() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<32>() * ::capnp::ELEMENTS);
+}
+inline void CarStateSP::Builder::setNissanParkingActive(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<32>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool CarStateSP::Reader::getNissanParkingBlocked() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<33>() * ::capnp::ELEMENTS);
+}
+
+inline bool CarStateSP::Builder::getNissanParkingBlocked() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<33>() * ::capnp::ELEMENTS);
+}
+inline void CarStateSP::Builder::setNissanParkingBlocked(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<33>() * ::capnp::ELEMENTS, value);
 }
 
 inline bool LiveMapDataSP::Reader::getSpeedLimitValid() const {

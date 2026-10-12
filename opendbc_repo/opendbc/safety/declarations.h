@@ -230,6 +230,8 @@ typedef struct {
   compute_checksum_t compute_checksum;
   get_counter_t get_counter;
   get_quality_flag_valid_t get_quality_flag_valid;
+  bool (*controls_blocked)(void);  // optional hard interlock, applied after MADS and before host TX
+  bool (*fwd_packet_blocked)(const CANPacket_t *msg);  // optional per-frame forwarding validation
 } safety_hooks;
 
 bool safety_rx_hook(const CANPacket_t *msg);
@@ -341,6 +343,7 @@ extern uint16_t current_safety_param_sp;
 extern safety_config current_safety_config;
 
 int safety_fwd_hook(int bus_num, int addr);
+int safety_fwd_hook_packet(const CANPacket_t *msg);
 int set_safety_hooks(uint16_t mode, uint16_t param);
 
 extern const safety_hooks body_hooks;

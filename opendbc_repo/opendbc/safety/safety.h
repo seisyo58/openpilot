@@ -193,6 +193,16 @@ static bool rx_msg_safety_check(const CANPacket_t *msg,
   return is_msg_valid(cfg->rx_checks, index);
 }
 
+static bool safety_controls_blocked(void) {
+  bool blocked = (current_hooks->controls_blocked != NULL) && current_hooks->controls_blocked();
+  if (blocked) {
+    controls_allowed = false;
+    mads_exit_controls(MADS_DISENGAGE_REASON_STEERING_DISENGAGE);
+    m_mads_state.controls_requested_lateral = false;
+  }
+  return blocked;
+}
+
 bool safety_rx_hook(const CANPacket_t *msg) {
   bool controls_allowed_prev = controls_allowed;
 
@@ -215,6 +225,8 @@ bool safety_rx_hook(const CANPacket_t *msg) {
       stock_ecu_check((m->addr == addr) && (m->bus == msg->bus));
     }
   }
+
+  (void)safety_controls_blocked();
 
   // reset mismatches on rising edge of controls_allowed to avoid rare race condition
   if (controls_allowed && !controls_allowed_prev) {
@@ -239,6 +251,9 @@ static bool tx_msg_safety_check(const CANPacket_t *msg, const CanMsg msg_list[],
 }
 
 bool safety_tx_hook(CANPacket_t *msg) {
+  if (safety_controls_blocked()) {
+    return false;
+  }
   bool whitelisted = tx_msg_safety_check(msg, current_safety_config.tx_msgs, current_safety_config.tx_msgs_len);
   if ((current_safety_mode == SAFETY_ALLOUTPUT) || (current_safety_mode == SAFETY_ELM327)) {
     whitelisted = true;
@@ -285,6 +300,16 @@ int safety_fwd_hook(int bus_num, int addr) {
   }
 
   return blocked ? -1 : destination_bus;
+}
+
+// The packet check matters when forwarding precedes RX: never forward a falling-edge
+// or corrupt steering frame using the previous packet's parking state.
+int safety_fwd_hook_packet(const CANPacket_t *msg) {
+  int bus = safety_fwd_hook(msg->bus, msg->addr);
+  if ((bus != -1) && (current_hooks->fwd_packet_blocked != NULL) && current_hooks->fwd_packet_blocked(msg)) {
+    bus = -1;
+  }
+  return bus;
 }
 
 // Given a CRC-8 poly, generate a static lookup table to use with a fast CRC-8
@@ -347,6 +372,7 @@ void safety_tick(const safety_config *cfg) {
   }
 
   safety_rx_checks_invalid = rx_checks_invalid;
+  (void)safety_controls_blocked();
 }
 
 static void relay_malfunction_set(void) {

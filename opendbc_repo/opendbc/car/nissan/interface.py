@@ -31,10 +31,17 @@ class CarInterface(CarInterfaceBase):
 
     return ret
 
+  def update(self, can_packets):
+    if self.CS.parking is not None:
+      self.CS.parking.update(can_packets)
+    return super().update(can_packets)
+
   @staticmethod
   def _get_params_sp(stock_cp: structs.CarParams, ret: structs.CarParamsSP, candidate, fingerprint: dict[int, dict[int, int]],
                      car_fw: list[structs.CarParams.CarFw], alpha_long: bool, is_release_sp: bool, docs: bool) -> structs.CarParamsSP:
     if candidate in (CAR.NISSAN_LEAF, CAR.NISSAN_LEAF_IC):
       ret.safetyParam |= NissanSafetyFlagsSP.LEAF
+    if candidate == CAR.NISSAN_LEAF_IC:
+      ret.safetyParam |= NissanSafetyFlagsSP.PPP_INTERLOCK
 
     return ret

@@ -23,6 +23,14 @@ class CarController(CarControllerBase):
     self.packer = CANPacker(dbc_names[Bus.pt])
 
   def update(self, CC, CC_SP, CS, now_nanos):
+    # Firmware passes stock PPP frames through while host output is suppressed.
+    # Keep suppressing cancellation/HUD/steering until an explicit cruise-main cycle.
+    if CS.parking is not None and CS.parking.blocked:
+      self.apply_angle_last = CS.out.steeringAngleDeg
+      self.angle_filter.x = CS.out.steeringAngleDeg
+      self.frame += 1
+      return structs.CarControl.Actuators(), []
+
     actuators = CC.actuators
     hud_control = CC.hudControl
     pcm_cancel_cmd = CC.cruiseControl.cancel

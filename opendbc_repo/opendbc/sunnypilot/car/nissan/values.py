@@ -12,6 +12,7 @@ from opendbc.car import structs
 class NissanSafetyFlagsSP:
   DEFAULT = 0
   LEAF = 1
+  PPP_INTERLOCK = 2  # experimental: NISSAN_LEAF_IC only
 
 
 ButtonType = structs.CarState.ButtonEvent.Type
