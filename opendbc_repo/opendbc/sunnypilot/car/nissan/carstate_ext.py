@@ -8,19 +8,24 @@ from enum import StrEnum
 
 from opendbc.car import Bus, structs
 from opendbc.can.parser import CANParser
-from opendbc.sunnypilot.car.nissan.values import BUTTONS
+from opendbc.sunnypilot.car.nissan.values import BUTTONS, NissanSafetyFlagsSP
+from opendbc.sunnypilot.car.nissan.parking import NissanParkingInterlock
 
 
 class CarStateExt:
   def __init__(self, CP, CP_SP):
     self.CP = CP
     self.CP_SP = CP_SP
+    self.parking = NissanParkingInterlock() if CP_SP.safetyParam & NissanSafetyFlagsSP.PPP_INTERLOCK else None
 
     self.button_events = []
     self.button_states = {button.event_type: False for button in BUTTONS}
 
   def update(self, ret: structs.CarState, ret_sp: structs.CarStateSP, can_parsers: dict[StrEnum, CANParser]):
     cp = can_parsers[Bus.pt]
+    if self.parking is not None:
+      ret_sp.nissanParkingActive = self.parking.active
+      ret_sp.nissanParkingBlocked = self.parking.blocked
 
     button_events = []
     for button in BUTTONS:

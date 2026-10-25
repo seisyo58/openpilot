@@ -1,0 +1,5 @@
+# Restore the firmware build entry point stripped from the staging release tree.
+# The matching upstream SConscript owns compiler flags and signing.
+import os
+SetOption('num_jobs', max(1, (os.cpu_count() or 1) - 1))
+SConscript('SConscript')

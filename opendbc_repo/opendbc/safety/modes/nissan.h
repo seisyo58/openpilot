@@ -19,6 +19,113 @@
   {.msg = {{0x1B6, alt_eps_bus, 8, 10U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},  \
 
 static bool nissan_alt_eps = false;
+static bool nissan_ppp_enabled = false;
+static bool nissan_ppp_seen = false;
+static bool nissan_ppp_active = false;
+static bool nissan_ppp_rearm = false;
+static bool nissan_ppp_main_off_seen = false;
+static bool nissan_ppp_main_on = false;
+static bool nissan_ppp_cruise_on = false;
+static bool nissan_ppp_counter_seen = false;
+static uint8_t nissan_ppp_counter = 0U;
+static uint32_t nissan_ppp_ts = 0U;
+
+static bool nissan_ppp_fresh(void) {
+  return nissan_ppp_seen && (safety_get_ts_elapsed(microsecond_timer_get(), nissan_ppp_ts) <= 100000U);
+}
+
+static void nissan_ppp_fault(void) {
+  nissan_ppp_rearm = true;
+  nissan_ppp_main_off_seen = false;
+}
+
+static bool nissan_ppp_controls_blocked(void) {
+  if (nissan_ppp_enabled && !nissan_ppp_fresh() && nissan_ppp_seen) {
+    nissan_ppp_fault();
+  }
+  return nissan_ppp_enabled && (!nissan_ppp_fresh() || nissan_ppp_active || nissan_ppp_rearm);
+}
+
+static bool nissan_ppp_checksum_valid(const CANPacket_t *msg) {
+  if (GET_LEN(msg) != 8) {
+    return false;
+  }
+  uint8_t crc = 0xFFU;  // mk_crc8_fun(init_crc=0, xor_out=0xFF)
+  for (int i = 0; i < 7; i++) {
+    crc ^= msg->data[i];
+    for (int j = 0; j < 8; j++) {
+      crc = ((crc & 0x80U) != 0U) ? (uint8_t)((crc << 1) ^ 0x1DU) : (uint8_t)(crc << 1);
+    }
+  }
+  return (uint8_t)(crc ^ 0xFFU) == msg->data[7];
+}
+
+static void nissan_ppp_rx(const CANPacket_t *msg) {
+  (void)nissan_ppp_controls_blocked();  // latch a timeout before accepting a recovered frame
+  if ((msg->addr == 0x169U) && (msg->bus == 2U)) {
+    if (!nissan_ppp_checksum_valid(msg)) {
+      nissan_ppp_seen = false;
+      nissan_ppp_fault();
+    } else {
+      uint8_t counter = msg->data[6] & 0xFU;
+      uint8_t delta = (counter - nissan_ppp_counter) & 0xFU;
+      bool counter_ok = !nissan_ppp_counter_seen || ((delta >= 1U) && (delta <= 3U));
+      nissan_ppp_counter = counter;
+      nissan_ppp_counter_seen = true;
+      if (!counter_ok) {
+        nissan_ppp_seen = false;
+        nissan_ppp_fault();
+      } else {
+        nissan_ppp_seen = true;
+        nissan_ppp_ts = microsecond_timer_get();
+        nissan_ppp_active = GET_BIT(msg, 53U);
+        if (nissan_ppp_active) {
+          nissan_ppp_fault();
+        }
+      }
+    }
+  }
+  if ((msg->addr == 0x30FU) && (msg->bus == 2U)) {
+    nissan_ppp_cruise_on = GET_BIT(msg, 3U);
+  }
+  if ((msg->addr == 0x239U) && (msg->bus == 0U)) {
+    bool main_on = GET_BIT(msg, 17U);
+    if (nissan_ppp_fresh() && !nissan_ppp_active && !nissan_ppp_cruise_on) {
+      if (!main_on) {
+        nissan_ppp_main_off_seen = true;
+      } else if (!nissan_ppp_main_on && nissan_ppp_main_off_seen) {
+        nissan_ppp_rearm = false;
+        nissan_ppp_main_off_seen = false;
+      }
+    }
+    nissan_ppp_main_on = main_on;
+  }
+}
+
+static bool nissan_fwd_hook(int bus_num, int addr) {
+  bool replacement = ((bus_num == 2) && ((addr == 0x169) || (addr == 0x2B1) || (addr == 0x4CC))) ||
+                     ((bus_num == 0) && (addr == 0x239));
+  if (!replacement) {
+    return false;
+  }
+  // Only the experimental Leaf config opts these messages out of static blocking.
+  if (!nissan_ppp_enabled) {
+    return (bus_num == 2);
+  }
+  bool blocked = nissan_ppp_controls_blocked();
+  if (addr == 0x169) {
+    return !(nissan_ppp_fresh() && nissan_ppp_active);
+  }
+  return !blocked;  // while host is inhibited, preserve stock HUD and driver buttons
+}
+
+static bool nissan_ppp_fwd_packet_blocked(const CANPacket_t *msg) {
+  if (!nissan_ppp_enabled || (msg->bus != 2U) || (msg->addr != 0x169U)) {
+    return false;
+  }
+  uint8_t delta = ((msg->data[6] & 0xFU) - nissan_ppp_counter) & 0xFU;
+  return !nissan_ppp_checksum_valid(msg) || !GET_BIT(msg, 53U) || (delta < 1U) || (delta > 3U);
+}
 
 static const AngleSteeringLimits NISSAN_STEERING_LIMITS = {
   .max_angle = 60000,  // 600 deg, reasonable limit
@@ -34,6 +141,9 @@ static const AngleSteeringLimits NISSAN_STEERING_LIMITS = {
 };
 
 static void nissan_rx_hook(const CANPacket_t *msg) {
+  if (nissan_ppp_enabled) {
+    nissan_ppp_rx(msg);
+  }
 
   // Altima: on camera bus, others: on pt bus
   if (msg->bus == 0U) {
@@ -125,6 +235,13 @@ static safety_config nissan_init(uint16_t param) {
     {0x239, 2, 8, .check_relay = true}    // CRUISE_THROTTLE (Leaf)
   };
 
+  static const CanMsg NISSAN_TX_MSGS_LEAF_PPP[] = {
+    {0x169, 0, 8, .check_relay = true, .disable_static_blocking = true},
+    {0x2b1, 0, 8, .check_relay = true, .disable_static_blocking = true},
+    {0x4cc, 0, 8, .check_relay = true, .disable_static_blocking = true},
+    {0x239, 2, 8, .check_relay = true, .disable_static_blocking = true},
+  };
+
   static const CanMsg NISSAN_TX_MSGS_XTRAIL[] = {
     {0x169, 0, 8, .check_relay = true},   // LKAS
     {0x2b1, 0, 8, .check_relay = true},   // PROPILOT_HUD
@@ -154,16 +271,37 @@ static safety_config nissan_init(uint16_t param) {
     NISSAN_COMMON_RX_CHECKS
   };
 
+  static RxCheck nissan_leaf_ppp_rx_checks[] = {
+    NISSAN_COMMON_RX_CHECKS
+    // CRC and rolling-counter validation in nissan_ppp_rx.
+    {.msg = {{0x169, 2, 8, 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, {0}, {0}}},
+  };
+
   // EPS Location. false = V-CAN, true = C-CAN
   const uint16_t NISSAN_PARAM_ALT_EPS_BUS = 1;
 
   const uint16_t NISSAN_PARAM_SP_LEAF = 1;
+  const uint16_t NISSAN_PARAM_SP_PPP_INTERLOCK = 2;
 
   nissan_alt_eps = GET_FLAG(param, NISSAN_PARAM_ALT_EPS_BUS);
   const bool nissan_leaf = GET_FLAG(current_safety_param_sp, NISSAN_PARAM_SP_LEAF);
 
+  nissan_ppp_enabled = nissan_leaf && !nissan_alt_eps && GET_FLAG(current_safety_param_sp, NISSAN_PARAM_SP_PPP_INTERLOCK);
+  nissan_ppp_seen = false;
+  nissan_ppp_active = false;
+  nissan_ppp_rearm = false;
+  nissan_ppp_main_off_seen = false;
+  nissan_ppp_main_on = false;
+  nissan_ppp_cruise_on = false;
+  nissan_ppp_counter_seen = false;
+  nissan_ppp_counter = 0U;
+  nissan_ppp_ts = 0U;
+
   safety_config ret;
-  if (nissan_leaf) {
+  if (nissan_ppp_enabled) {
+    SET_TX_MSGS(NISSAN_TX_MSGS_LEAF_PPP, ret);
+    SET_RX_CHECKS(nissan_leaf_ppp_rx_checks, ret);
+  } else if (nissan_leaf) {
     SET_TX_MSGS(NISSAN_TX_MSGS_LEAF, ret);
     SET_RX_CHECKS(nissan_leaf_rx_checks, ret);
   } else if (nissan_alt_eps) {
@@ -181,4 +319,7 @@ const safety_hooks nissan_hooks = {
   .init = nissan_init,
   .rx = nissan_rx_hook,
   .tx = nissan_tx_hook,
+  .fwd = nissan_fwd_hook,
+  .controls_blocked = nissan_ppp_controls_blocked,
+  .fwd_packet_blocked = nissan_ppp_fwd_packet_blocked,
 };
