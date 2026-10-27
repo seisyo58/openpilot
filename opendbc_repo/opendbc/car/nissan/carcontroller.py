@@ -5,7 +5,9 @@ from opendbc.car.lateral import apply_std_steer_angle_limits
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car.nissan import nissancan
 from opendbc.car.nissan.values import CAR, CarControllerParams
+from opendbc.sunnypilot.car.nissan.auto_resume import NissanAutoResume
 from opendbc.sunnypilot.car.nissan.nissancan_ext import create_cruise_throttle_msg
+from opendbc.sunnypilot.car.nissan.values import NissanFlagsSP
 from opendbc.car.common.filter_simple import FirstOrderFilter
 
 VisualAlert = structs.CarControl.HUDControl.VisualAlert
@@ -21,11 +23,32 @@ class CarController(CarControllerBase):
     self.apply_angle_last = 0
 
     self.packer = CANPacker(dbc_names[Bus.pt])
+    leaf = CP.carFingerprint in (CAR.NISSAN_LEAF, CAR.NISSAN_LEAF_IC)
+    self._auto_resume = NissanAutoResume() if leaf else None
+    self._auto_resume_enabled = bool(leaf and CP_SP.flags & NissanFlagsSP.AUTO_RESUME)
 
   def update(self, CC, CC_SP, CS, now_nanos):
+    parking_blocked = CS.parking is not None and CS.parking.blocked
+    resume_res = False
+    if self._auto_resume is not None:
+      bottom_msg = CS.lkas_hud_info_msg.get("BOTTOM_MSG", 0) if CS.lkas_hud_info_msg else 0
+      lead = CC_SP.leadOne
+      resume_res = self._auto_resume.update(
+        enabled=self._auto_resume_enabled,
+        standstill=bool(CS.out.standstill),
+        cruise_enabled=bool(CS.out.cruiseState.enabled),
+        brake_pressed=bool(CS.out.brakePressed),
+        gas_pressed=bool(CS.out.gasPressed),
+        bottom_msg=int(bottom_msg or 0),
+        lead_present=bool(lead.status),
+        lead_drel=float(lead.dRel),
+        parking_blocked=parking_blocked,
+        cancel=bool(CC.cruiseControl.cancel),
+      )
+
     # Firmware passes stock PPP frames through while host output is suppressed.
     # Keep suppressing cancellation/HUD/steering until an explicit cruise-main cycle.
-    if CS.parking is not None and CS.parking.blocked:
+    if parking_blocked:
       self.apply_angle_last = CS.out.steeringAngleDeg
       self.angle_filter.x = CS.out.steeringAngleDeg
       self.frame += 1
@@ -68,7 +91,14 @@ class CarController(CarControllerBase):
       can_sends.append(nissancan.create_acc_cancel_cmd(self.packer, self.car_fingerprint, CS.cruise_throttle_msg))
 
     if self.CP.carFingerprint != CAR.NISSAN_ALTIMA and self.frame % 2 == 0:
-      button = "CANCEL_BUTTON" if pcm_cancel_cmd else None
+      # Cancel wins over auto-resume. A stock CANCEL already in the copied frame
+      # is also left alone by create_cruise_throttle_msg.
+      if pcm_cancel_cmd:
+        button = "CANCEL_BUTTON"
+      elif resume_res:
+        button = "RES_BUTTON"
+      else:
+        button = None
       can_sends.append(create_cruise_throttle_msg(self.packer, self.car_fingerprint, CS.cruise_throttle_msg, self.frame, button))
 
     can_sends.append(nissancan.create_steering_control(

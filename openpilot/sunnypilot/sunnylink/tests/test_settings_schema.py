@@ -296,6 +296,17 @@ class TestKnownVehicleSettings(OpenpilotTestCase):
     assert "SubaruStopAndGo" in keys
     assert "SubaruStopAndGoManualParkingBrake" in keys
 
+  def test_nissan_auto_resume_is_vehicle_toggle(self, schema):
+    items = _brand_items(schema["vehicle_settings"].get("nissan"))
+    item = next(i for i in items if i["key"] == "NissanAutoResume")
+    assert item["widget"] == "toggle"
+    assert item["needs_onroad_cycle"] is True
+    panel_keys = set()
+    for panel in schema["panels"]:
+      for entry in _iter_panel_items(panel):
+        panel_keys.add(entry["key"])
+    assert "NissanAutoResume" not in panel_keys
+
 
 class TestItemCompleteness(OpenpilotTestCase):
   def _collect_all_items(self, schema):
