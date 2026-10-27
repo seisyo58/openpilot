@@ -131,10 +131,60 @@ class TestAutoResumeStateMachine(unittest.TestCase):
         self.assertNotIn(True, pressed)
 
   def test_wrong_bottom_msg_waits_until_press_res(self):
+    # The lead is still beyond the departure threshold when the cluster catches up.
     self._arm()
     self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=6.0, bottom_msg=0))
     self.assertTrue(self.resume._departed)
     self.assertTrue(_step(self.resume, 1, bottom_msg=PRESS_RES_TO_RESTART, lead_drel=6.0))
+
+  def test_returning_lead_invalidates_pending_departure(self):
+    # Departure while a gate is closed, then the lead comes back and stays stopped.
+    gates = ({"bottom_msg": 0}, {"brake_pressed": True}, {"cancel": True})
+    for gate in gates:
+      with self.subTest(gate=gate):
+        self.setUp()
+        self._arm(4.0)
+        self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=6.0, **gate))
+        self.assertTrue(self.resume._departed)
+        self.assertFalse(_step(self.resume, 1, lead_drel=4.0, **gate))
+        self.assertFalse(self.resume._departed)
+        self.assertTrue(self.resume._armed)
+        self.assertFalse(_step(self.resume, 500, lead_drel=4.0, **gate))
+        # Opening the gate with the lead still stopped must not press RES.
+        self.assertFalse(_step(self.resume, 5, lead_drel=4.0))
+        self.assertFalse(self.resume._departed)
+        # A new pull-away, still in this standstill, is a current event.
+        self.assertTrue(_step(self.resume, TRIGGER_FRAMES, lead_drel=6.0))
+
+  def test_missing_lead_invalidates_pending_departure(self):
+    self._arm(4.0)
+    self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=6.0, bottom_msg=0))
+    self.assertTrue(self.resume._departed)
+    self.assertFalse(_step(self.resume, 1, lead_present=False, lead_drel=6.0, bottom_msg=0))
+    self.assertFalse(self.resume._departed)
+    self.assertFalse(self.resume._armed)
+    self.assertFalse(_step(self.resume, 10, lead_present=False, lead_drel=6.0))
+    self.assertFalse(_step(self.resume, ARM_FRAMES - 1, lead_drel=4.0))
+    self.assertFalse(self.resume._departed)
+
+  def test_armed_near_8m_can_depart_past_the_window(self):
+    self._arm(7.2)
+    steps = 20
+    for i in range(1, steps + 1):
+      drel = 7.2 + (9.2 - 7.2) * i / steps
+      self.assertFalse(_step(self.resume, 1, lead_drel=drel))
+      self.assertTrue(self.resume._armed)
+      self.assertFalse(self.resume._departed)
+    self.assertGreater(9.2, CLOSE_LEAD_M)
+    presses = [_step(self.resume, 1, lead_drel=9.2) for _ in range(TRIGGER_FRAMES)]
+    self.assertIn(True, presses)
+
+  def test_confirmation_continues_when_closer_lead_crosses_8m(self):
+    self._arm(4.0)
+    for drel in (6.5, 7.6, 8.0, 8.6, 9.4):
+      self.assertFalse(_step(self.resume, 1, lead_drel=drel))
+      self.assertTrue(self.resume._armed)
+    self.assertTrue(_step(self.resume, TRIGGER_FRAMES, lead_drel=9.4))
 
   def test_cancel_aborts_an_in_progress_press(self):
     self._arm()

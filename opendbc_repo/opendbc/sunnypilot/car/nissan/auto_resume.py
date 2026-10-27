@@ -13,6 +13,9 @@ PRESS_RES_TO_RESTART = 4
 # Same thresholds as Lead Departure Alert (e2e_alerts_helper.py). That alert
 # only runs while openpilot longitudinal is off, so this copies the detection
 # and is allowed to run while stock ICC is engaged.
+# The 8 m window is only for arming. Once armed, a still-present lead may move
+# past 8 m while the departure is confirmed. The alert drops the arm at 8 m,
+# which makes a lead stopped at 7–8 m unable to ever count a 1 m pull-away.
 CLOSE_LEAD_M = 8.0
 ARM_S = 1.0
 DEPART_M = 1.0
@@ -70,8 +73,10 @@ class NissanAutoResume:
       self._hold_frames = 0
       return False
 
-    if not self._departed:
-      self._update_lead(lead_present, lead_drel)
+    # Keep checking the lead after a departure is seen. A gate (cluster message,
+    # brake, cancel) may still be closed, and an old event must not press RES
+    # after the lead has come back or disappeared.
+    self._update_lead(lead_present, lead_drel)
 
     if not self._ready(cruise_enabled, brake_pressed, gas_pressed, bottom_msg, cancel):
       return False
@@ -91,9 +96,9 @@ class NissanAutoResume:
     return cancel or parking_blocked or brake_pressed or gas_pressed or not cruise_enabled
 
   def _update_lead(self, lead_present: bool, lead_drel: float) -> None:
-    close = bool(lead_present) and lead_drel < CLOSE_LEAD_M
+    present = bool(lead_present)
     if not self._armed:
-      if close:
+      if present and lead_drel < CLOSE_LEAD_M:
         self._arm_frames += 1
         if self._arm_frames >= ARM_FRAMES:
           self._armed = True
@@ -103,10 +108,10 @@ class NissanAutoResume:
         self._arm_frames = 0
       return
 
-    # Armed leads that leave the 8 m window or drop out are not a confirmed
-    # departure. A real pull-away of just over 1 m stays inside that window.
-    if not close or self._min_drel is None:
+    # Armed. Distance may pass 8 m. A lead that is gone is not a departure.
+    if not present or self._min_drel is None:
       self._reset_detection()
+      self._departed = False
       return
 
     if lead_drel < self._min_drel:
@@ -117,7 +122,9 @@ class NissanAutoResume:
       if self._trigger_frames >= TRIGGER_FRAMES:
         self._departed = True
     else:
+      # Back within 1 m of the stopped minimum. Drop the pending event.
       self._trigger_frames = 0
+      self._departed = False
 
   def _reset_detection(self) -> None:
     self._arm_frames = 0
