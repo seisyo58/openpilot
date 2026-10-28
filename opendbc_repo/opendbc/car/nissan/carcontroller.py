@@ -44,7 +44,13 @@ class CarController(CarControllerBase):
         lead_drel=float(lead.dRel),
         parking_blocked=parking_blocked,
         cancel=bool(CC.cruiseControl.cancel),
+        lead_vrel=float(lead.vRel),
+        icc_brake_pt=getattr(CS, "icc_brake_pt", None),
+        icc_brake_adas=getattr(CS, "icc_brake_adas", None),
       )
+      # Published on the next carStateSP. 0x1cc is not brakePressed.
+      CS.auto_resume_obs = self._auto_resume.observation()
+      CS.auto_resume_obs["res"] = bool(resume_res)
 
     # Firmware passes stock PPP frames through while host output is suppressed.
     # Keep suppressing cancellation/HUD/steering until an explicit cruise-main cycle.

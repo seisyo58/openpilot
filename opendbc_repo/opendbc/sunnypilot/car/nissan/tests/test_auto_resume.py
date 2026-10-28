@@ -11,6 +11,7 @@ from opendbc.sunnypilot.car.nissan.auto_resume import (
   CLOSE_LEAD_M,
   COOLDOWN_FRAMES,
   DEPART_M,
+  DEPART_VREL_MIN,
   PRESS_RES_TO_RESTART,
   RES_HOLD_FRAMES,
   TRIGGER_FRAMES,
@@ -29,6 +30,7 @@ def _step(resume, n=1, **overrides):
     bottom_msg=PRESS_RES_TO_RESTART,
     lead_present=True,
     lead_drel=4.0,
+    lead_vrel=1.0,
     parking_blocked=False,
     cancel=False,
   )
@@ -78,35 +80,35 @@ class TestAutoResumeStateMachine(unittest.TestCase):
 
   def test_triggers_after_sustained_departure_and_holds_res(self):
     self._arm(4.0)
-    self.assertFalse(_step(self.resume, TRIGGER_FRAMES - 1, lead_drel=5.2))
-    presses = [_step(self.resume, 1, lead_drel=5.2) for _ in range(RES_HOLD_FRAMES)]
+    self.assertFalse(_step(self.resume, TRIGGER_FRAMES - 1, lead_drel=7.5))
+    presses = [_step(self.resume, 1, lead_drel=7.5) for _ in range(RES_HOLD_FRAMES)]
     self.assertEqual(presses, [True] * RES_HOLD_FRAMES)
-    self.assertFalse(_step(self.resume, 5, lead_drel=6.0))
+    self.assertFalse(_step(self.resume, 5, lead_drel=7.5))
 
   def test_short_departure_does_not_trigger(self):
     self._arm()
-    self.assertFalse(_step(self.resume, TRIGGER_FRAMES - 1, lead_drel=6.0))
+    self.assertFalse(_step(self.resume, TRIGGER_FRAMES - 1, lead_drel=7.5))
     self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=4.0))
     self.assertFalse(self.resume._departed)
 
   def test_once_per_standstill(self):
     self._arm()
-    self.assertTrue(_step(self.resume, TRIGGER_FRAMES, lead_drel=6.0))
+    self.assertTrue(_step(self.resume, TRIGGER_FRAMES, lead_drel=7.5))
     _step(self.resume, RES_HOLD_FRAMES)
     self._arm()
     self.assertFalse(_step(self.resume, TRIGGER_FRAMES + 5, lead_drel=7.0))
 
   def test_new_standstill_after_cooldown_can_resume_again(self):
     self._arm()
-    self.assertTrue(_step(self.resume, TRIGGER_FRAMES, lead_drel=6.0))
+    self.assertTrue(_step(self.resume, TRIGGER_FRAMES, lead_drel=7.5))
     _step(self.resume, 1, standstill=False)
     self.assertFalse(self.resume._sent)
     self._arm()
-    self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=6.0))
+    self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=7.5))
     self.assertTrue(self.resume._departed)
     pressed = False
     for _ in range(COOLDOWN_FRAMES + 2):
-      pressed = _step(self.resume, 1, lead_drel=6.0)
+      pressed = _step(self.resume, 1, lead_drel=7.5)
       if pressed:
         break
     self.assertTrue(pressed)
@@ -127,15 +129,15 @@ class TestAutoResumeStateMachine(unittest.TestCase):
       with self.subTest(overrides=overrides):
         self.setUp()
         self._arm()
-        pressed = [_step(self.resume, 1, lead_drel=6.0, **overrides) for _ in range(TRIGGER_FRAMES + RES_HOLD_FRAMES)]
+        pressed = [_step(self.resume, 1, lead_drel=7.5, **overrides) for _ in range(TRIGGER_FRAMES + RES_HOLD_FRAMES)]
         self.assertNotIn(True, pressed)
 
   def test_wrong_bottom_msg_waits_until_press_res(self):
     # The lead is still beyond the departure threshold when the cluster catches up.
     self._arm()
-    self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=6.0, bottom_msg=0))
+    self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=7.5, bottom_msg=0))
     self.assertTrue(self.resume._departed)
-    self.assertTrue(_step(self.resume, 1, bottom_msg=PRESS_RES_TO_RESTART, lead_drel=6.0))
+    self.assertTrue(_step(self.resume, 1, bottom_msg=PRESS_RES_TO_RESTART, lead_drel=7.5))
 
   def test_returning_lead_invalidates_pending_departure(self):
     # Departure while a gate is closed, then the lead comes back and stays stopped.
@@ -144,7 +146,7 @@ class TestAutoResumeStateMachine(unittest.TestCase):
       with self.subTest(gate=gate):
         self.setUp()
         self._arm(4.0)
-        self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=6.0, **gate))
+        self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=7.5, **gate))
         self.assertTrue(self.resume._departed)
         self.assertFalse(_step(self.resume, 1, lead_drel=4.0, **gate))
         self.assertFalse(self.resume._departed)
@@ -154,16 +156,16 @@ class TestAutoResumeStateMachine(unittest.TestCase):
         self.assertFalse(_step(self.resume, 5, lead_drel=4.0))
         self.assertFalse(self.resume._departed)
         # A new pull-away, still in this standstill, is a current event.
-        self.assertTrue(_step(self.resume, TRIGGER_FRAMES, lead_drel=6.0))
+        self.assertTrue(_step(self.resume, TRIGGER_FRAMES, lead_drel=7.5))
 
   def test_missing_lead_invalidates_pending_departure(self):
     self._arm(4.0)
-    self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=6.0, bottom_msg=0))
+    self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=7.5, bottom_msg=0))
     self.assertTrue(self.resume._departed)
-    self.assertFalse(_step(self.resume, 1, lead_present=False, lead_drel=6.0, bottom_msg=0))
+    self.assertFalse(_step(self.resume, 1, lead_present=False, lead_drel=7.5, bottom_msg=0))
     self.assertFalse(self.resume._departed)
     self.assertFalse(self.resume._armed)
-    self.assertFalse(_step(self.resume, 10, lead_present=False, lead_drel=6.0))
+    self.assertFalse(_step(self.resume, 10, lead_present=False, lead_drel=7.5))
     self.assertFalse(_step(self.resume, ARM_FRAMES - 1, lead_drel=4.0))
     self.assertFalse(self.resume._departed)
 
@@ -171,12 +173,12 @@ class TestAutoResumeStateMachine(unittest.TestCase):
     self._arm(7.2)
     steps = 20
     for i in range(1, steps + 1):
-      drel = 7.2 + (9.2 - 7.2) * i / steps
+      drel = 7.2 + (10.7 - 7.2) * i / steps
       self.assertFalse(_step(self.resume, 1, lead_drel=drel))
       self.assertTrue(self.resume._armed)
       self.assertFalse(self.resume._departed)
-    self.assertGreater(9.2, CLOSE_LEAD_M)
-    presses = [_step(self.resume, 1, lead_drel=9.2) for _ in range(TRIGGER_FRAMES)]
+    self.assertGreater(10.7, CLOSE_LEAD_M)
+    presses = [_step(self.resume, 1, lead_drel=10.7) for _ in range(TRIGGER_FRAMES)]
     self.assertIn(True, presses)
 
   def test_confirmation_continues_when_closer_lead_crosses_8m(self):
@@ -188,13 +190,13 @@ class TestAutoResumeStateMachine(unittest.TestCase):
 
   def test_cancel_aborts_an_in_progress_press(self):
     self._arm()
-    self.assertTrue(_step(self.resume, TRIGGER_FRAMES, lead_drel=6.0))
-    self.assertFalse(_step(self.resume, 1, cancel=True, lead_drel=6.0))
-    self.assertFalse(_step(self.resume, RES_HOLD_FRAMES, lead_drel=6.0))
+    self.assertTrue(_step(self.resume, TRIGGER_FRAMES, lead_drel=7.5))
+    self.assertFalse(_step(self.resume, 1, cancel=True, lead_drel=7.5))
+    self.assertFalse(_step(self.resume, RES_HOLD_FRAMES, lead_drel=7.5))
 
   def test_ppp_clears_a_latched_departure(self):
     self._arm()
-    self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=6.0, bottom_msg=0))
+    self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=7.5, bottom_msg=0))
     self.assertTrue(self.resume._departed)
     _step(self.resume, 1, parking_blocked=True, bottom_msg=PRESS_RES_TO_RESTART)
     self.assertFalse(self.resume._departed)
@@ -202,10 +204,40 @@ class TestAutoResumeStateMachine(unittest.TestCase):
 
   def test_brake_holds_off_the_press_until_released(self):
     self._arm()
-    self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=6.0, brake_pressed=True))
+    self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=7.5, brake_pressed=True))
     self.assertTrue(self.resume._departed)
-    self.assertFalse(_step(self.resume, 3, brake_pressed=True, lead_drel=6.0))
-    self.assertTrue(_step(self.resume, 1, lead_drel=6.0))
+    self.assertFalse(_step(self.resume, 3, brake_pressed=True, lead_drel=7.5))
+    self.assertTrue(_step(self.resume, 1, lead_drel=7.5))
+
+  def test_distance_without_closing_speed_does_not_trigger(self):
+    self._arm(3.5)
+    self.assertFalse(_step(self.resume, TRIGGER_FRAMES + 5, lead_drel=3.5 + DEPART_M + 1.0, lead_vrel=0.0))
+    self.assertFalse(self.resume._departed)
+    self.assertFalse(_step(self.resume, TRIGGER_FRAMES + 2, lead_drel=3.5 + DEPART_M + 1.0, lead_vrel=DEPART_VREL_MIN))
+    self.assertFalse(self.resume._departed)
+
+  def test_vrel_drop_clears_a_pending_departure(self):
+    self._arm(3.5)
+    far = 3.5 + DEPART_M + 1.0
+    self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=far, lead_vrel=1.0, bottom_msg=0))
+    self.assertTrue(self.resume._departed)
+    self.assertFalse(_step(self.resume, 1, lead_drel=far, lead_vrel=0.0, bottom_msg=0))
+    self.assertFalse(self.resume._departed)
+    self.assertFalse(_step(self.resume, 3, lead_drel=far, lead_vrel=0.0))
+
+  def test_transition_log_marks_arm_depart_and_res(self):
+    events = []
+    self.resume = NissanAutoResume(on_transition=events.append)
+    self._arm(3.5)
+    self.assertEqual(events[-1]["phase"], "armed")
+    self.assertEqual(events[-1]["minDRel"], 3.5)
+    far = 3.5 + DEPART_M + 1.0
+    self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=far, bottom_msg=0))
+    self.assertEqual(events[-1]["phase"], "departed")
+    self.assertTrue(_step(self.resume, 1, lead_drel=far, icc_brake_pt=3, icc_brake_adas=0))
+    self.assertEqual(events[-1]["phase"], "res")
+    self.assertEqual(events[-1]["iccBrakePt"], 3)
+    self.assertTrue(events[-1]["sent"])
 
 
 class TestAutoResumeParam(unittest.TestCase):
@@ -253,6 +285,7 @@ class TestAutoResumeActuation(unittest.TestCase):
     cc_sp = structs.CarControlSP()
     cc_sp.leadOne.status = True
     cc_sp.leadOne.dRel = 4.0
+    cc_sp.leadOne.vRel = 1.0
     return ci, cc, cc_sp
 
   def _buttons(self, ci, cc, cc_sp, n, drel):
@@ -270,13 +303,13 @@ class TestAutoResumeActuation(unittest.TestCase):
 
   def _run_departure(self, ci, cc, cc_sp):
     self._buttons(ci, cc, cc_sp, ARM_FRAMES, 4.0)
-    return self._buttons(ci, cc, cc_sp, TRIGGER_FRAMES + RES_HOLD_FRAMES + 4, 6.0)
+    return self._buttons(ci, cc, cc_sp, TRIGGER_FRAMES + RES_HOLD_FRAMES + 4, 7.5)
 
   def test_enabled_leaf_sends_one_res_pulse(self):
     ci, cc, cc_sp = self._car(CAR.NISSAN_LEAF, True)
     during_arm, _ = self._buttons(ci, cc, cc_sp, ARM_FRAMES, 4.0)
     self.assertNotIn(True, during_arm)
-    res, cancel = self._buttons(ci, cc, cc_sp, TRIGGER_FRAMES + RES_HOLD_FRAMES + 4, 6.0)
+    res, cancel = self._buttons(ci, cc, cc_sp, TRIGGER_FRAMES + RES_HOLD_FRAMES + 4, 7.5)
     self.assertTrue(any(res))
     self.assertNotIn(True, cancel)
     self.assertGreaterEqual(sum(res), 1)
