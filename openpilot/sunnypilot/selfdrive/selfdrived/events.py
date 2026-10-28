@@ -9,7 +9,7 @@ from openpilot.cereal import log, custom
 from opendbc.car.structs import car
 from openpilot.common.constants import CV
 from openpilot.sunnypilot.selfdrive.selfdrived.events_base import EventsBase, Priority, ET, Alert, \
-  NoEntryAlert, ImmediateDisableAlert, EngagementAlert, AlertCallbackType, wrong_car_mode_alert
+  NoEntryAlert, ImmediateDisableAlert, EngagementAlert, NormalPermanentAlert, AlertCallbackType, wrong_car_mode_alert
 from openpilot.sunnypilot.selfdrive.controls.lib.speed_limit import PCM_LONG_REQUIRED_MAX_SET_SPEED, CONFIRM_SPEED_THRESHOLD
 from openpilot.common.hardware import HARDWARE
 
@@ -89,6 +89,16 @@ class EventsSP(EventsBase):
 
 
 EVENTS_SP: dict[int, dict[str, Alert | AlertCallbackType]] = {
+  EventNameSP.nissanParkingActive: {
+    ET.USER_DISABLE: EngagementAlert(AudibleAlert.disengage),
+    ET.PERMANENT: NormalPermanentAlert("ProPILOT Parking", "sunnypilot and MADS disabled"),
+    ET.NO_ENTRY: NoEntryAlert("ProPILOT Parking active"),
+  },
+  EventNameSP.nissanParkingRearm: {
+    ET.USER_DISABLE: EngagementAlert(AudibleAlert.disengage),
+    ET.PERMANENT: NormalPermanentAlert("sunnypilot and MADS disabled", "After parking, switch cruise main off then on"),
+    ET.NO_ENTRY: NoEntryAlert("Parking interlock: valid CAN and cruise-main cycle required"),
+  },
   # sunnypilot
   EventNameSP.lkasEnable: {
     ET.ENABLE: EngagementAlert(AudibleAlert.engage),

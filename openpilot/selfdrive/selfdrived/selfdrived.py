@@ -27,6 +27,7 @@ from openpilot.common.version import get_build_metadata
 from openpilot.common.hardware import HARDWARE
 
 from openpilot.sunnypilot.mads.mads import ModularAssistiveDrivingSystem
+from openpilot.sunnypilot.selfdrive.selfdrived.parking import apply_parking_interlock, parking_interlock_enabled
 from openpilot.sunnypilot import get_sanitize_int_param
 from openpilot.sunnypilot.selfdrive.car.car_specific import CarSpecificEventsSP
 from openpilot.sunnypilot.selfdrive.car.intelligent_cruise_button_management.controller import IntelligentCruiseButtonManagement
@@ -108,6 +109,7 @@ class SelfdriveD:
                                    'managerState', 'vehicleParameters', 'radarState', 'lateralTorqueParameters',
                                    'controlsState', 'carControl', 'driverAssistance', 'alertDebug', 'userBookmark',
                                    'lateralManeuverPlan', 'modelDataV2SP', 'longitudinalPlanSP'] + \
+                                   (['carStateSP'] if parking_interlock_enabled(self.CP, self.CP_SP) else []) + \
                                    self.camera_packets + self.sensor_packets + self.gps_packets,
                                   ignore_alive=ignore, ignore_avg_freq=ignore,
                                   ignore_valid=ignore, frequency=int(1/DT_CTRL))
@@ -643,10 +645,11 @@ class SelfdriveD:
   def step(self):
     CS = self.data_sample()
     self.update_events(CS)
-    if not self.CP.passive and self.initialized:
-      self.enabled, self.active = self.state_machine.update(self.events)
-    if not self.CP.notCar:
-      self.mads.update(CS)
+    if not apply_parking_interlock(self):
+      if not self.CP.passive and self.initialized:
+        self.enabled, self.active = self.state_machine.update(self.events)
+      if not self.CP.notCar:
+        self.mads.update(CS)
     self.update_alerts(CS)
 
     self.button_state_tracker.update(CS)
