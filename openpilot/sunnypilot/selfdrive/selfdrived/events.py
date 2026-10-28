@@ -89,6 +89,16 @@ class EventsSP(EventsBase):
 
 
 EVENTS_SP: dict[int, dict[str, Alert | AlertCallbackType]] = {
+  EventNameSP.nissanParkingActive: {
+    ET.USER_DISABLE: EngagementAlert(AudibleAlert.disengage),
+    ET.PERMANENT: NormalPermanentAlert("ProPILOT Parking", "sunnypilot and MADS disabled"),
+    ET.NO_ENTRY: NoEntryAlert("ProPILOT Parking active"),
+  },
+  EventNameSP.nissanParkingRearm: {
+    ET.USER_DISABLE: EngagementAlert(AudibleAlert.disengage),
+    ET.PERMANENT: NormalPermanentAlert("sunnypilot and MADS disabled", "After parking, switch cruise main off then on"),
+    ET.NO_ENTRY: NoEntryAlert("Parking interlock: valid CAN and cruise-main cycle required"),
+  },
   # sunnypilot
   EventNameSP.lkasEnable: {
     ET.ENABLE: EngagementAlert(AudibleAlert.engage),
