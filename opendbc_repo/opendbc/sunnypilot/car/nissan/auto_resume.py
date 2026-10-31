@@ -10,15 +10,13 @@ from opendbc.car import DT_CTRL
 # Nissan cluster: PROPILOT_HUD_INFO_MSG.BOTTOM_MSG == PRESS_RES_TO_RESTART.
 PRESS_RES_TO_RESTART = 4
 
-# Arming distance matches Lead Departure Alert. The pull-away gate is stricter:
-# a field test resumed at about min_dRel + 1.0 m (~4.4 m) and stock ICC then
-# dropped the lead and cancelled itself. Wait until the lead is clearly away
-# and still moving.
+# Arming distance matches Lead Departure Alert. Retry the 1 m departure gate
+# for vehicle testing, retaining the relative-speed and confirmation-time gates.
 # The 8 m window is only for arming. Once armed, a still-present lead may move
 # past 8 m while the departure is confirmed.
 CLOSE_LEAD_M = 8.0
 ARM_S = 1.0
-DEPART_M = 2.5
+DEPART_M = 1.0
 DEPART_VREL_MIN = 0.5  # m/s; lead pulling away. Equality does not count.
 TRIGGER_S = 0.5
 RES_HOLD_S = 0.12
@@ -142,6 +140,7 @@ class NissanAutoResume:
       "dRel": float(lead_drel),
       "vRel": float(lead_vrel),
       "bottomMsg": int(bottom_msg),
+      "departThresholdM": DEPART_M,
       # 0x1cc byte 0. ICC hold brake, not CarState.brakePressed.
       "iccBrakePt": icc_brake_pt,
       "iccBrakeAdas": icc_brake_adas,
