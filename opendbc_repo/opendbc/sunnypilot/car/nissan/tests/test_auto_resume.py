@@ -84,18 +84,16 @@ class TestAutoResumeStateMachine(unittest.TestCase):
     self.assertFalse(_step(self.resume, TRIGGER_FRAMES + 2, lead_drel=5.0))
     self.assertTrue(_step(self.resume, TRIGGER_FRAMES, lead_drel=5.1))
 
-  def test_triggers_after_sustained_departure_and_holds_res(self):
+  def test_triggers_on_first_qualifying_update_and_holds_res(self):
     self._arm(4.0)
-    self.assertFalse(_step(self.resume, TRIGGER_FRAMES - 1, lead_drel=7.5))
     presses = [_step(self.resume, 1, lead_drel=7.5) for _ in range(RES_HOLD_FRAMES)]
     self.assertEqual(presses, [True] * RES_HOLD_FRAMES)
     self.assertFalse(_step(self.resume, 5, lead_drel=7.5))
 
-  def test_short_departure_does_not_trigger(self):
+  def test_single_qualifying_update_triggers_without_confirmation(self):
     self._arm()
-    self.assertFalse(_step(self.resume, TRIGGER_FRAMES - 1, lead_drel=7.5))
-    self.assertFalse(_step(self.resume, TRIGGER_FRAMES, lead_drel=4.0))
-    self.assertFalse(self.resume._departed)
+    self.assertTrue(_step(self.resume, 1, lead_drel=7.5))
+    self.assertTrue(self.resume._sent)
 
   def test_once_per_standstill(self):
     self._arm()
@@ -180,17 +178,16 @@ class TestAutoResumeStateMachine(unittest.TestCase):
     steps = 20
     for i in range(1, steps + 1):
       drel = 7.2 + (10.7 - 7.2) * i / steps
-      self.assertFalse(_step(self.resume, 1, lead_drel=drel))
+      self.assertFalse(_step(self.resume, 1, lead_drel=drel, bottom_msg=0))
       self.assertTrue(self.resume._armed)
-      self.assertFalse(self.resume._departed)
     self.assertGreater(10.7, CLOSE_LEAD_M)
     presses = [_step(self.resume, 1, lead_drel=10.7) for _ in range(TRIGGER_FRAMES)]
     self.assertIn(True, presses)
 
-  def test_confirmation_continues_when_closer_lead_crosses_8m(self):
+  def test_pending_departure_remains_valid_past_8m(self):
     self._arm(4.0)
     for drel in (6.5, 7.6, 8.0, 8.6, 9.4):
-      self.assertFalse(_step(self.resume, 1, lead_drel=drel))
+      self.assertFalse(_step(self.resume, 1, lead_drel=drel, bottom_msg=0))
       self.assertTrue(self.resume._armed)
     self.assertTrue(_step(self.resume, TRIGGER_FRAMES, lead_drel=9.4))
 
