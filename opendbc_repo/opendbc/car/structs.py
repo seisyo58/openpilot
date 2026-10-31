@@ -168,3 +168,9 @@ class CarStateSP:
   speedLimit: float = auto_field()
   nissanParkingActive: bool = auto_field()
   nissanParkingBlocked: bool = auto_field()
+  nissanAutoResumeArmed: bool = auto_field()
+  nissanAutoResumeDeparted: bool = auto_field()
+  nissanAutoResumeSent: bool = auto_field()
+  nissanAutoResumeRes: bool = auto_field()
+  # -1 when no minimum has been recorded this standstill.
+  nissanAutoResumeMinDRel: float = -1.0

@@ -6,6 +6,8 @@ See the LICENSE.md file in the root directory for more details.
 """
 
 from collections import namedtuple
+from enum import IntFlag
+
 from opendbc.car import structs
 
 
@@ -13,6 +15,11 @@ class NissanSafetyFlagsSP:
   DEFAULT = 0
   LEAF = 1
   PPP_INTERLOCK = 2  # experimental: NISSAN_LEAF_IC only
+  AUTO_RESUME = 4  # Leaf only: host-injected RES requires controls_allowed
+
+
+class NissanFlagsSP(IntFlag):
+  AUTO_RESUME = 1
 
 
 ButtonType = structs.CarState.ButtonEvent.Type

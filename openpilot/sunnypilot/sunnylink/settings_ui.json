@@ -2366,6 +2366,19 @@
           ]
         }
       ]
+    },
+    "nissan": {
+      "title": "Nissan Settings",
+      "description": "",
+      "items": [
+        {
+          "key": "NissanAutoResume",
+          "widget": "toggle",
+          "needs_onroad_cycle": true,
+          "title": "Auto Resume from Standstill (Beta)",
+          "description": "When stock ProPILOT/ICC is holding a stopped Leaf and the cluster asks the driver to press RES, press RES once after the lead vehicle pulls away. Experimental, and off unless enabled here. Does nothing during ProPILOT Park. Takes effect on the next drive."
+        }
+      ]
     }
   }
 }

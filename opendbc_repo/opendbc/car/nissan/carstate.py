@@ -46,6 +46,9 @@ class CarState(CarStateBase, CarStateExt):
       ret.brakePressed = bool(cp.vl["DOORS_LIGHTS"]["USER_BRAKE_PRESSED"])
     elif self.CP.carFingerprint in (CAR.NISSAN_LEAF, CAR.NISSAN_LEAF_IC):
       ret.brakePressed = bool(cp.vl["CRUISE_THROTTLE"]["USER_BRAKE_PRESSED"])
+      # 0x1cc byte 0 is ICC's own hold brake, not the driver pedal above.
+      self.icc_brake_pt = _brake_pedal_byte(cp)
+      self.icc_brake_adas = _brake_pedal_byte(cp_adas)
 
     fl = cp.vl["WHEEL_SPEEDS_FRONT"]["WHEEL_SPEED_FL"] * CV.KPH_TO_MS
     fr = cp.vl["WHEEL_SPEEDS_FRONT"]["WHEEL_SPEED_FR"] * CV.KPH_TO_MS
@@ -143,8 +146,18 @@ class CarState(CarStateBase, CarStateExt):
 
   @staticmethod
   def get_can_parsers(CP, CP_SP):
+    leaf = CP.carFingerprint in (CAR.NISSAN_LEAF, CAR.NISSAN_LEAF_IC)
+    # ignore_alive: missing 0x1cc must not mark CAN invalid. Not used as driver brake.
+    brake = [("BRAKE_PEDAL", float("nan"))] if leaf else []
     return {
-      Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 1 if CP.carFingerprint == CAR.NISSAN_ALTIMA else 0),
+      Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], brake, 1 if CP.carFingerprint == CAR.NISSAN_ALTIMA else 0),
       Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 0 if CP.carFingerprint == CAR.NISSAN_ALTIMA else 1),
-      Bus.adas: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 2),
+      Bus.adas: CANParser(DBC[CP.carFingerprint][Bus.pt], brake, 2),
     }
+
+
+def _brake_pedal_byte(parser):
+  ts = parser.ts_nanos.get("BRAKE_PEDAL", {}).get("BRAKE_PEDAL", 0)
+  if not ts:
+    return None
+  return int(parser.vl["BRAKE_PEDAL"]["BRAKE_PEDAL"])

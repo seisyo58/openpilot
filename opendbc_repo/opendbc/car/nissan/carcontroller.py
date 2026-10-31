@@ -5,9 +5,11 @@ from opendbc.car.lateral import apply_std_steer_angle_limits
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car.nissan import nissancan
 from opendbc.car.nissan.values import CAR, CarControllerParams
+from opendbc.sunnypilot.car.nissan.auto_resume import NissanAutoResume
+from opendbc.sunnypilot.car.nissan.values import NissanFlagsSP
 from opendbc.car.common.filter_simple import FirstOrderFilter
 
-from opendbc.sunnypilot.car.nissan.icbm import IntelligentCruiseButtonManagementInterface
+from opendbc.sunnypilot.car.nissan.icbm import REPLAY_BUTTONS, IntelligentCruiseButtonManagementInterface
 
 VisualAlert = structs.CarControl.HUDControl.VisualAlert
 
@@ -23,11 +25,40 @@ class CarController(CarControllerBase, IntelligentCruiseButtonManagementInterfac
     self.apply_angle_last = 0
 
     self.packer = CANPacker(dbc_names[Bus.pt])
+    leaf = CP.carFingerprint in (CAR.NISSAN_LEAF, CAR.NISSAN_LEAF_IC)
+    self._auto_resume = NissanAutoResume() if leaf else None
+    self._auto_resume_enabled = bool(leaf and CP_SP.flags & NissanFlagsSP.AUTO_RESUME)
 
   def update(self, CC, CC_SP, CS, now_nanos):
+    parking_blocked = CS.parking is not None and CS.parking.blocked
+    resume_res = False
+    if self._auto_resume is not None:
+      bottom_msg = CS.lkas_hud_info_msg.get("BOTTOM_MSG", 0) if CS.lkas_hud_info_msg else 0
+      lead = CC_SP.leadOne
+      resume_res = self._auto_resume.update(
+        enabled=self._auto_resume_enabled,
+        standstill=bool(CS.out.standstill),
+        cruise_enabled=bool(CS.out.cruiseState.enabled),
+        brake_pressed=bool(CS.out.brakePressed),
+        gas_pressed=bool(CS.out.gasPressed),
+        bottom_msg=int(bottom_msg or 0),
+        lead_present=bool(lead.status),
+        lead_drel=float(lead.dRel),
+        parking_blocked=parking_blocked,
+        cancel=bool(CC.cruiseControl.cancel or
+                    any(CS.cruise_throttle_msg.get(b, 0) for b in (*REPLAY_BUTTONS, "CANCEL_BUTTON"))),
+        lead_vrel=float(lead.vRel),
+        icc_brake_pt=getattr(CS, "icc_brake_pt", None),
+        icc_brake_adas=getattr(CS, "icc_brake_adas", None),
+      )
+      # Published on the next carStateSP. 0x1cc is not brakePressed.
+      CS.auto_resume_obs = self._auto_resume.observation()
+      CS.auto_resume_obs["res"] = bool(resume_res)
+
     # Firmware passes stock PPP frames through while host output is suppressed.
     # Keep suppressing cancellation/HUD/steering until an explicit cruise-main cycle.
-    if CS.parking is not None and CS.parking.blocked:
+    if parking_blocked:
+      self.reset()
       self.apply_angle_last = CS.out.steeringAngleDeg
       self.angle_filter.x = CS.out.steeringAngleDeg
       self.frame += 1
@@ -70,7 +101,7 @@ class CarController(CarControllerBase, IntelligentCruiseButtonManagementInterfac
       can_sends.append(nissancan.create_acc_cancel_cmd(self.packer, self.car_fingerprint, CS.cruise_throttle_msg))
 
     if self.CP.carFingerprint != CAR.NISSAN_ALTIMA and self.frame % 2 == 0:
-      can_sends.extend(IntelligentCruiseButtonManagementInterface.update(self, CS, CC_SP, self.packer, self.frame, self.last_button_frame, pcm_cancel_cmd))
+      can_sends.extend(IntelligentCruiseButtonManagementInterface.update(self, CS, CC_SP, self.packer, self.frame, self.last_button_frame, pcm_cancel_cmd, resume_res=resume_res))
 
     can_sends.append(nissancan.create_steering_control(
       self.packer, self.apply_angle_last, self.frame, CC.latActive, lkas_max_torque))

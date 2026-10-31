@@ -23,6 +23,13 @@ class CarStateExt:
 
   def update(self, ret: structs.CarState, ret_sp: structs.CarStateSP, can_parsers: dict[StrEnum, CANParser]):
     cp = can_parsers[Bus.pt]
+    obs = getattr(self, "auto_resume_obs", None)
+    if obs is not None:
+      ret_sp.nissanAutoResumeArmed = bool(obs["armed"])
+      ret_sp.nissanAutoResumeDeparted = bool(obs["departed"])
+      ret_sp.nissanAutoResumeSent = bool(obs["sent"])
+      ret_sp.nissanAutoResumeRes = bool(obs["res"])
+      ret_sp.nissanAutoResumeMinDRel = float(obs["minDRel"])
     if self.parking is not None:
       ret_sp.nissanParkingActive = self.parking.active
       ret_sp.nissanParkingBlocked = self.parking.blocked
