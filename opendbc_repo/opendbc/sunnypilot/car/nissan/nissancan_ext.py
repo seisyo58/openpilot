@@ -22,6 +22,8 @@ LEAF_CRUISE_THROTTLE_SIGNALS = [
   "unsure3",
   "COUNTER",
   "USER_BRAKE_PRESSED",
+  # Preserve the stock bit; its meaning is not established.
+  "UNKNOWN_38",
   "unsure5",
   "unsure6",
   "unsure7",
