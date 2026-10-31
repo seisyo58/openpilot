@@ -135,5 +135,61 @@ class TestNissanLeafSafety(TestNissanSafety):
         args = {} if btn is None else {btn: 1}
         tx = self._tx(self._acc_button_cmd(**args))
         self.assertEqual(tx, should_tx)
+
+
+class TestNissanLeafAutoResumeSafety(unittest.TestCase):
+  """Host-injected RES is allowed only while controls are allowed, unless the frame echoes the driver's RES.
+
+  Not a CarSafetyTest subclass: it uses the same Nissan safety mode as TestNissanLeafSafety, and the
+  cross-mode TX scan treats every Nissan subclass as a different car.
+  """
+
+  def setUp(self):
+    self.packer = CANPackerSafety("nissan_leaf_2018_generated")
+    self.safety = libsafety_py.libsafety
+    self.safety.set_current_safety_param_sp(NissanSafetyFlagsSP.LEAF | NissanSafetyFlagsSP.AUTO_RESUME)
+    self.safety.set_safety_hooks(CarParams.SafetyModel.nissan, 0)
+    self.safety.init_tests()
+
+  def _tx(self, msg):
+    return self.safety.safety_tx_hook(msg)
+
+  def _rx(self, msg):
+    return self.safety.safety_rx_hook(msg)
+
+  def _acc_button_cmd(self, cancel=0, propilot=0, flw_dist=0, _set=0, res=0):
+    no_button = not any([cancel, propilot, flw_dist, _set, res])
+    values = {"CANCEL_BUTTON": cancel, "PROPILOT_BUTTON": propilot,
+              "FOLLOW_DISTANCE_BUTTON": flw_dist, "SET_BUTTON": _set,
+              "RES_BUTTON": res, "NO_BUTTON_PRESSED": no_button}
+    return self.packer.make_can_msg_safety("CRUISE_THROTTLE", 2, values)
+
+  def _stock_res(self, res):
+    return self.packer.make_can_msg_safety("CRUISE_THROTTLE", 0, {"RES_BUTTON": res})
+
+  def test_other_buttons_unchanged(self):
+    for controls_allowed in (True, False):
+      for btn in ("cancel", "propilot", "flw_dist", "_set", None):
+        self.safety.set_controls_allowed(controls_allowed)
+        args = {} if btn is None else {btn: 1}
+        self.assertTrue(self._tx(self._acc_button_cmd(**args)))
+
+  def test_injected_res_requires_controls_or_driver_button(self):
+    self._rx(self._stock_res(0))
+    self.safety.set_controls_allowed(False)
+    self.assertFalse(self._tx(self._acc_button_cmd(res=1)))
+
+    self.safety.set_controls_allowed(True)
+    self.assertTrue(self._tx(self._acc_button_cmd(res=1)))
+
+    self.safety.set_controls_allowed(False)
+    self._rx(self._stock_res(1))
+    self.assertTrue(self._tx(self._acc_button_cmd(res=1)))
+
+    self._rx(self._stock_res(0))
+    self.safety.set_controls_allowed(False)
+    self.assertFalse(self._tx(self._acc_button_cmd(res=1)))
+
+
 if __name__ == "__main__":
   unittest.main()

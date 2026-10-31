@@ -8,7 +8,7 @@ from typing import Any
 
 from opendbc.car import structs
 from opendbc.car.interfaces import CarInterfaceBase
-from openpilot.common.params import Params
+from openpilot.common.params import Params, UnknownKeyName
 from openpilot.common.swaglog import cloudlog
 from openpilot.sunnypilot.selfdrive.controls.lib.nnlc.helpers import get_nn_model_path
 from openpilot.sunnypilot.selfdrive.controls.lib.speed_limit.helpers import set_speed_limit_assist_availability
@@ -129,4 +129,15 @@ def initialize_params(params) -> list[dict[str, Any]]:
     "ToyotaTSS2Smooth",
   ])
 
-  return [{k: params.get(k, return_default=True)} for k in keys]
+  values = [{k: params.get(k, return_default=True)} for k in keys]
+
+  # An older libparams_c build may not know this key and raises UnknownKeyName.
+  # card calls this before it writes CarParams, so an
+  # uncaught miss leaves selfdrived blocked and the UI on "Waiting to start".
+  try:
+    nissan_auto_resume = params.get("NissanAutoResume", return_default=True)
+  except UnknownKeyName:
+    cloudlog.error("NissanAutoResume is not in libparams_c.so; auto resume stays off")
+    nissan_auto_resume = 0
+  values.append({"NissanAutoResume": nissan_auto_resume})
+  return values

@@ -19,6 +19,8 @@
   {.msg = {{0x1B6, alt_eps_bus, 8, 10U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},  \
 
 static bool nissan_alt_eps = false;
+static bool nissan_auto_resume = false;
+static bool nissan_leaf_stock_res = false;
 static bool nissan_ppp_enabled = false;
 static bool nissan_ppp_seen = false;
 static bool nissan_ppp_active = false;
@@ -190,6 +192,9 @@ static void nissan_rx_hook(const CANPacket_t *msg) {
 
   if ((msg->addr == 0x239U) && (msg->bus == 0U)) {
     acc_main_on = GET_BIT(msg, 17U);
+    // Leaf CRUISE_THROTTLE.RES_BUTTON, bit 28. Remember the driver's button so a
+    // forwarded press is still allowed when cruise is not engaged.
+    nissan_leaf_stock_res = GET_BIT(msg, 28U);
   }
 
   if ((msg->addr == 0x1B6U) && (msg->bus == (nissan_alt_eps ? 2U : 1U))) {
@@ -212,6 +217,15 @@ static bool nissan_tx_hook(const CANPacket_t *msg) {
     if (steer_angle_cmd_checks(desired_angle, lka_active, NISSAN_STEERING_LIMITS)) {
       violation = true;
     }
+  }
+
+  // Leaf auto-resume injects RES on the relayed 0x239 frame. Allow that bit only
+  // while stock cruise has enabled controls, unless this frame is echoing the
+  // driver's own RES (captured on bus 0). Rejecting the frame is fail-closed:
+  // the gas/brake copy in this message is dropped for that one cycle.
+  if (nissan_auto_resume && (msg->addr == 0x239U) && GET_BIT(msg, 28U) &&
+      !controls_allowed && !nissan_leaf_stock_res) {
+    violation = true;
   }
 
   if (violation) {
@@ -276,9 +290,12 @@ static safety_config nissan_init(uint16_t param) {
 
   const uint16_t NISSAN_PARAM_SP_LEAF = 1;
   const uint16_t NISSAN_PARAM_SP_PPP_INTERLOCK = 2;
+  const uint16_t NISSAN_PARAM_SP_AUTO_RESUME = 4;
 
   nissan_alt_eps = GET_FLAG(param, NISSAN_PARAM_ALT_EPS_BUS);
   const bool nissan_leaf = GET_FLAG(current_safety_param_sp, NISSAN_PARAM_SP_LEAF);
+  nissan_auto_resume = nissan_leaf && !nissan_alt_eps && GET_FLAG(current_safety_param_sp, NISSAN_PARAM_SP_AUTO_RESUME);
+  nissan_leaf_stock_res = false;
 
   nissan_ppp_enabled = nissan_leaf && !nissan_alt_eps && GET_FLAG(current_safety_param_sp, NISSAN_PARAM_SP_PPP_INTERLOCK);
   nissan_ppp_seen = false;

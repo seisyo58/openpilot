@@ -457,6 +457,12 @@ struct CarStateSP @0xb86e6369214c01c8 {
   speedLimit @0 :Float32;
   nissanParkingActive @1 :Bool;
   nissanParkingBlocked @2 :Bool;
+  nissanAutoResumeArmed @3 :Bool;
+  nissanAutoResumeDeparted @4 :Bool;
+  nissanAutoResumeSent @5 :Bool;
+  nissanAutoResumeRes @6 :Bool;
+  # -1 until a stopped lead distance has been recorded.
+  nissanAutoResumeMinDRel @7 :Float32;
 }
 
 struct LiveMapDataSP @0xf416ec09499d9d19 {
