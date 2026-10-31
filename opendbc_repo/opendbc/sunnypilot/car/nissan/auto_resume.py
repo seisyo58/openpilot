@@ -11,20 +11,19 @@ from opendbc.car import DT_CTRL
 PRESS_RES_TO_RESTART = 4
 
 # Arming distance matches Lead Departure Alert. Retry the 1 m departure gate
-# for vehicle testing, retaining the relative-speed and confirmation-time gates.
+# for vehicle testing, retaining the relative-speed gate.
 # The 8 m window is only for arming. Once armed, a still-present lead may move
-# past 8 m while the departure is confirmed.
+# past 8 m when the departure is detected.
 CLOSE_LEAD_M = 8.0
 ARM_S = 1.0
 DEPART_M = 1.0
 DEPART_VREL_MIN = 0.5  # m/s; lead pulling away. Equality does not count.
-TRIGGER_S = 0.5
 RES_HOLD_S = 0.12
 COOLDOWN_S = 3.0
 
 ARM_FRAMES = round(ARM_S / DT_CTRL)  # >= 1.0 s
-# Strictly longer than TRIGGER_S. 50 frames is exactly 0.5 s and does not fire.
-TRIGGER_FRAMES = int(TRIGGER_S / DT_CTRL) + 1
+# Detect departure on the first qualifying control update, without a dwell.
+TRIGGER_FRAMES = 1
 RES_HOLD_FRAMES = round(RES_HOLD_S / DT_CTRL)
 COOLDOWN_FRAMES = round(COOLDOWN_S / DT_CTRL)
 
