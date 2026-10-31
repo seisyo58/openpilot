@@ -78,6 +78,12 @@ class TestAutoResumeStateMachine(unittest.TestCase):
     self.assertFalse(_step(self.resume, TRIGGER_FRAMES + 2, lead_drel=4.2 + DEPART_M))
     self.assertFalse(self.resume._departed)
 
+  def test_one_meter_departure_boundary(self):
+    self._arm(4.0)
+    self.assertFalse(_step(self.resume, TRIGGER_FRAMES + 2, lead_drel=4.9))
+    self.assertFalse(_step(self.resume, TRIGGER_FRAMES + 2, lead_drel=5.0))
+    self.assertTrue(_step(self.resume, TRIGGER_FRAMES, lead_drel=5.1))
+
   def test_triggers_after_sustained_departure_and_holds_res(self):
     self._arm(4.0)
     self.assertFalse(_step(self.resume, TRIGGER_FRAMES - 1, lead_drel=7.5))

@@ -61,7 +61,7 @@ PYTHONPATH=opendbc_repo:. python -m unittest discover \
 
 `leaf-custom` から自動RES機能を追加したブランチ。対象は Leaf / Leaf IC、
 `NissanAutoResume` は既定OFF。Sunnylink の Nissan Settings から設定し、次の走行で反映する。
-純正ICCが有効な停車中、近距離の先行車を1秒間確認し、その車が2.5mを超えて離れ、
+純正ICCが有効な停車中、近距離の先行車を1秒間確認し、その車が1mを超えて離れ、
 相対速度が0.5m/sを超えた状態を0.5秒超確認して、メーターがRES操作を要求している場合に
 0.12秒のRESを停車1回につき一度だけ送る。先行車の消失や接近、相対速度の低下では保留した離脱判定を消す。
 
