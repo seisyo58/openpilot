@@ -120,8 +120,12 @@ while IFS= read -r -d '' f; do
 done < <(git ls-files -z openpilot)
 
 # Include tooling, launchers, and the extensionless Git hook.
+# Embedded dependencies were submodules upstream and use their own lint rules.
 SHELL_FILES=()
 while IFS= read -r -d '' f; do
+  case "$f" in
+    panda/* | opendbc_repo/*) continue ;;
+  esac
   if [[ -f $f ]]; then
     SHELL_FILES+=("$f")
   fi
