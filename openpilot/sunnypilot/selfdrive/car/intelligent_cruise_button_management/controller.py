@@ -27,7 +27,10 @@ PLANNER_GAIN = 1.0  # acceleration error -> set-speed adjustment rate
 PLANNER_MAX_LOWER_RATE = 2.0  # m/s of set speed per second
 PLANNER_RECOVERY_RATE = 0.5  # m/s of set speed per second
 PLANNER_ACCEL_DEADBAND = 0.15  # m/s²
-PLANNER_MAX_PENDING_DROP = 2.0 / 3.6  # at most 2 km/h below OEM acknowledgement
+PLANNER_MAX_PENDING_DROP = 5.0 / 3.6  # one observed Leaf OEM step
+LEAF_BUTTON_TIMEOUT = 0.3  # s; stop requesting if no acknowledgement
+LEAF_SETTLE_TIME = 1.0  # s; observe vehicle response after a button request
+LEAF_INCREASE_CONFIRM = 1.0  # s; avoid reversing for a transient higher target
 PLANNER_RELEASE_THRESHOLD = -0.1  # hysteresis after entering at -0.3
 PLANNER_DECEL_THRESHOLD = -0.3  # m/s²; ignore very small deceleration requests
 PLAN_MAX_AGE = 0.25  # s
@@ -66,6 +69,10 @@ class IntelligentCruiseButtonManagement:
     self.cruise_button_timers = CRUISE_BUTTON_TIMER.copy()
     self.planner_cap = None
     self.planner_decelerating = False
+    self.leaf_time = 0.0
+    self.leaf_pending = None
+    self.leaf_settle_until = 0.0
+    self.leaf_increase_since = None
     self.use_planner = CP.carFingerprint in (NISSAN.NISSAN_LEAF, NISSAN.NISSAN_LEAF_IC) and not CP.openpilotLongitudinalControl
 
   @property
@@ -92,7 +99,8 @@ class IntelligentCruiseButtonManagement:
         if error < -PLANNER_ACCEL_DEADBAND:
           self.planner_cap -= min(-error * PLANNER_GAIN, PLANNER_MAX_LOWER_RATE) * DT_CTRL
           # Wait for the OEM setpoint to respond before asking for more.
-          self.planner_cap = max(self.planner_cap, cluster - PLANNER_MAX_PENDING_DROP)
+          pending_drop = PLANNER_MAX_PENDING_DROP if self.is_metric else 2.0 / 3.6
+          self.planner_cap = max(self.planner_cap, cluster - pending_drop)
         else:
           # Already braking enough: cancel any remaining downward target.
           self.planner_cap = max(self.planner_cap, cluster)
@@ -109,6 +117,8 @@ class IntelligentCruiseButtonManagement:
 
     self.v_target = round(self.v_target_ms_last * speed_conv)
     self.v_cruise_min = get_minimum_set_speed(self.is_metric)
+    if self.use_planner and self.is_metric:
+      self.v_target = max(self.v_cruise_min, 5 * math.floor((self.v_target_ms_last * speed_conv + 1e-4) / 5))
     self.v_cruise_cluster = round(CS.cruiseState.speedCluster * speed_conv)
 
   def update_state_machine(self) -> custom.IntelligentCruiseButtonManagement.SendButtonState:
@@ -157,6 +167,42 @@ class IntelligentCruiseButtonManagement:
 
     return send_button
 
+  def pace_leaf_button(self, button):
+    """Wait for OEM acknowledgement and settling; never chase intermediate speeds."""
+    now = self.leaf_time
+    if self.planner_decelerating and button == SendButtonState.increase:
+      button = SendButtonState.none
+      self.leaf_increase_since = None
+    if not self.is_ready:
+      self.leaf_pending = self.leaf_increase_since = None
+      self.leaf_settle_until = now + LEAF_SETTLE_TIME
+      return SendButtonState.none
+    if self.leaf_pending is not None:
+      setting, started, requested = self.leaf_pending
+      if self.v_cruise_cluster != setting or now - started >= LEAF_BUTTON_TIMEOUT:
+        self.leaf_pending = None
+        self.leaf_settle_until = now + LEAF_SETTLE_TIME
+        self.leaf_increase_since = None
+        return SendButtonState.none
+      # A changed target must not finish an obsolete/opposite press.
+      if button == SendButtonState.none or button != requested:
+        self.leaf_pending = None
+        self.leaf_settle_until = now + LEAF_SETTLE_TIME
+        return SendButtonState.none
+      return button
+    if now < self.leaf_settle_until:
+      return SendButtonState.none
+    if button == SendButtonState.increase:
+      if self.leaf_increase_since is None:
+        self.leaf_increase_since = now
+      if now - self.leaf_increase_since < LEAF_INCREASE_CONFIRM:
+        return SendButtonState.none
+    else:
+      self.leaf_increase_since = None
+    if button != SendButtonState.none:
+      self.leaf_pending = (self.v_cruise_cluster, now, button)
+    return button
+
   def update_readiness(self, CS: car.CarState, CC: car.CarControl) -> None:
     update_manual_button_timers(CS, self.cruise_button_timers)
 
@@ -171,6 +217,7 @@ class IntelligentCruiseButtonManagement:
       return
 
     self.is_metric = is_metric
+    self.leaf_time += DT_CTRL
 
     self.update_readiness(CS, CC)
     if self.use_planner:
@@ -186,5 +233,9 @@ class IntelligentCruiseButtonManagement:
       self.update_calculations(CS, LP_SP, plan)
 
     self.cruise_button = self.update_state_machine()
+    if self.use_planner and self.is_metric and not CS.standstill:
+      self.cruise_button = self.pace_leaf_button(self.cruise_button)
+    elif CS.standstill:
+      self.leaf_pending = self.leaf_increase_since = None
 
     self.is_ready_prev = self.is_ready
