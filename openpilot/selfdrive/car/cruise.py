@@ -1,10 +1,11 @@
 import math
+
 import numpy as np
 
+from opendbc.car.nissan.values import CAR as NISSAN
 from opendbc.car.structs import car
 from openpilot.common.constants import CV
 from openpilot.sunnypilot.selfdrive.car.cruise_ext import VCruiseHelperSP
-
 
 # WARNING: this value was determined based on the model's training distribution,
 #          model predictions above this speed can be unpredictable
@@ -99,7 +100,7 @@ class VCruiseHelper(VCruiseHelperSP):
       return
 
     # Don't adjust speed when pressing resume to exit standstill
-    cruise_standstill = self.button_change_states[button_type]["standstill"] or CS.cruiseState.standstill
+    cruise_standstill = self.button_change_states[button_type]["standstill"] or self._resume_standstill(CS)
     if button_type == ButtonType.accelCruise and cruise_standstill:
       return
 
@@ -125,6 +126,12 @@ class VCruiseHelper(VCruiseHelperSP):
 
     self.v_cruise_kph = np.clip(round(self.v_cruise_kph, 1), self.v_cruise_min, V_CRUISE_MAX)
 
+  def _resume_standstill(self, CS):
+    # Leaf does not populate cruiseState.standstill. Keep this local to speed
+    # button handling rather than changing the vehicle's reported cruise state.
+    leaf_standstill = self.CP.carFingerprint in (NISSAN.NISSAN_LEAF, NISSAN.NISSAN_LEAF_IC) and CS.standstill
+    return CS.cruiseState.standstill or leaf_standstill
+
   def update_button_timers(self, CS, enabled):
     # increment timer for buttons still pressed
     for k in self.button_timers:
@@ -135,7 +142,7 @@ class VCruiseHelper(VCruiseHelperSP):
       if b.type.raw in self.button_timers:
         # Start/end timer and store current state on change of button pressed
         self.button_timers[b.type.raw] = 1 if b.pressed else 0
-        self.button_change_states[b.type.raw] = {"standstill": CS.cruiseState.standstill, "enabled": enabled}
+        self.button_change_states[b.type.raw] = {"standstill": self._resume_standstill(CS), "enabled": enabled}
 
   def initialize_v_cruise(self, CS, initial_speed: int) -> None:
     # initializing is handled by the PCM
