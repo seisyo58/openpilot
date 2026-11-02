@@ -21,7 +21,7 @@ IMPERIAL_INCREMENT = round(CV.MPH_TO_KPH, 1)  # round here to avoid rounding err
 ButtonEvent = car.CarState.ButtonEvent
 ButtonType = car.CarState.ButtonEvent.Type
 CRUISE_LONG_PRESS = 50
-LEAF_RESUME_ROLLBACK_FRAMES = round(1.0 / DT_CTRL)
+LEAF_RESUME_ROLLBACK_FRAMES = round(2.0 / DT_CTRL)
 CRUISE_NEAREST_FUNC = {
   ButtonType.accelCruise: math.ceil,
   ButtonType.decelCruise: math.floor,
@@ -141,7 +141,7 @@ class VCruiseHelper(VCruiseHelperSP):
       self.resume_increments.append((self.resume_frame, previous_speed, self.v_cruise_kph))
 
   def _update_leaf_resume_rollback(self, CS, enabled):
-    # Only undo actual increments from the last second, including custom steps
+    # Only undo actual increments from the last two seconds, including custom steps
     # and long-press rounding. Never restore a target changed by another source.
     if (not enabled or not CS.cruiseState.available or not CS.cruiseState.enabled or self.CP_SP.pcmCruiseSpeed or
         (self.resume_increments and self.v_cruise_kph != self.resume_increments[-1][2]) or

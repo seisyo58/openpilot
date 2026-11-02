@@ -56,7 +56,7 @@ class TestLeafResumeSpeed(unittest.TestCase):
     self.step(helper, False)
     self.assertEqual(helper.v_cruise_kph, 61)
 
-  def test_departure_within_one_second_rolls_back(self):
+  def test_departure_within_two_seconds_rolls_back(self):
     for delay in (1, LEAF_RESUME_ROLLBACK_FRAMES):
       with self.subTest(delay=delay):
         helper = self.make_helper(CAR.NISSAN_LEAF_IC)
