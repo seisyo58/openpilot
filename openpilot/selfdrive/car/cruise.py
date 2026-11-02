@@ -1,10 +1,13 @@
 import math
+from collections import deque
+
 import numpy as np
 
+from opendbc.car.nissan.values import CAR as NISSAN
 from opendbc.car.structs import car
+from opendbc.car import DT_CTRL
 from openpilot.common.constants import CV
 from openpilot.sunnypilot.selfdrive.car.cruise_ext import VCruiseHelperSP
-
 
 # WARNING: this value was determined based on the model's training distribution,
 #          model predictions above this speed can be unpredictable
@@ -18,6 +21,7 @@ IMPERIAL_INCREMENT = round(CV.MPH_TO_KPH, 1)  # round here to avoid rounding err
 ButtonEvent = car.CarState.ButtonEvent
 ButtonType = car.CarState.ButtonEvent.Type
 CRUISE_LONG_PRESS = 50
+LEAF_RESUME_ROLLBACK_FRAMES = round(2.0 / DT_CTRL)
 CRUISE_NEAREST_FUNC = {
   ButtonType.accelCruise: math.ceil,
   ButtonType.decelCruise: math.floor,
@@ -37,6 +41,8 @@ class VCruiseHelper(VCruiseHelperSP):
     self.v_cruise_kph_last = 0
     self.button_timers = {ButtonType.decelCruise: 0, ButtonType.accelCruise: 0}
     self.button_change_states = {btn: {"standstill": False, "enabled": False} for btn in self.button_timers}
+    self.resume_frame = 0
+    self.resume_increments = deque()
 
   @property
   def v_cruise_initialized(self):
@@ -48,6 +54,8 @@ class VCruiseHelper(VCruiseHelperSP):
     self.get_minimum_set_speed(is_metric)
 
     _enabled = self.update_enabled_state(CS, enabled)
+    self.resume_frame += 1
+    self._update_leaf_resume_rollback(CS, _enabled)
 
     if CS.cruiseState.available:
       if not self.CP.pcmCruise or (not self.CP_SP.pcmCruiseSpeed and _enabled):
@@ -99,8 +107,9 @@ class VCruiseHelper(VCruiseHelperSP):
       return
 
     # Don't adjust speed when pressing resume to exit standstill
-    cruise_standstill = self.button_change_states[button_type]["standstill"] or CS.cruiseState.standstill
-    if button_type == ButtonType.accelCruise and cruise_standstill:
+    cruise_standstill = self.button_change_states[button_type]["standstill"] or self._resume_standstill(CS)
+    leaf_stopped = self.CP.carFingerprint in (NISSAN.NISSAN_LEAF, NISSAN.NISSAN_LEAF_IC) and CS.standstill
+    if button_type == ButtonType.accelCruise and cruise_standstill and not leaf_stopped:
       return
 
     # Don't adjust speed if we've enabled since the button was depressed (some ports enable on rising edge)
@@ -113,6 +122,10 @@ class VCruiseHelper(VCruiseHelperSP):
     if self.update_speed_limit_assist_pre_active_confirmed(button_type):
       return
 
+    # A different speed operation supersedes any pending RES rollback.
+    if button_type != ButtonType.accelCruise:
+      self.resume_increments.clear()
+    previous_speed = self.v_cruise_kph
     long_press, v_cruise_delta = VCruiseHelperSP.update_v_cruise_delta(self, long_press, v_cruise_delta)
     if long_press and self.v_cruise_kph % v_cruise_delta != 0:  # partial interval
       self.v_cruise_kph = CRUISE_NEAREST_FUNC[button_type](self.v_cruise_kph / v_cruise_delta) * v_cruise_delta
@@ -124,6 +137,27 @@ class VCruiseHelper(VCruiseHelperSP):
       self.v_cruise_kph = max(self.v_cruise_kph, CS.vEgo * CV.MS_TO_KPH)
 
     self.v_cruise_kph = np.clip(round(self.v_cruise_kph, 1), self.v_cruise_min, V_CRUISE_MAX)
+    if button_type == ButtonType.accelCruise and leaf_stopped and self.v_cruise_kph > previous_speed:
+      self.resume_increments.append((self.resume_frame, previous_speed, self.v_cruise_kph))
+
+  def _update_leaf_resume_rollback(self, CS, enabled):
+    # Only undo actual increments from the last two seconds, including custom steps
+    # and long-press rounding. Never restore a target changed by another source.
+    if (not enabled or not CS.cruiseState.available or not CS.cruiseState.enabled or self.CP_SP.pcmCruiseSpeed or
+        (self.resume_increments and self.v_cruise_kph != self.resume_increments[-1][2]) or
+        any(b.type != ButtonType.accelCruise for b in CS.buttonEvents)):
+      self.resume_increments.clear()
+    while self.resume_increments and self.resume_frame - self.resume_increments[0][0] > LEAF_RESUME_ROLLBACK_FRAMES:
+      self.resume_increments.popleft()
+    if self.resume_increments and not CS.standstill:
+      self.v_cruise_kph = round(self.v_cruise_kph - sum(after - before for _, before, after in self.resume_increments), 1)
+      self.resume_increments.clear()
+
+  def _resume_standstill(self, CS):
+    # Leaf does not populate cruiseState.standstill. Keep this local to speed
+    # button handling rather than changing the vehicle's reported cruise state.
+    leaf_standstill = self.CP.carFingerprint in (NISSAN.NISSAN_LEAF, NISSAN.NISSAN_LEAF_IC) and CS.standstill
+    return CS.cruiseState.standstill or leaf_standstill
 
   def update_button_timers(self, CS, enabled):
     # increment timer for buttons still pressed
@@ -135,7 +169,7 @@ class VCruiseHelper(VCruiseHelperSP):
       if b.type.raw in self.button_timers:
         # Start/end timer and store current state on change of button pressed
         self.button_timers[b.type.raw] = 1 if b.pressed else 0
-        self.button_change_states[b.type.raw] = {"standstill": CS.cruiseState.standstill, "enabled": enabled}
+        self.button_change_states[b.type.raw] = {"standstill": self._resume_standstill(CS), "enabled": enabled}
 
   def initialize_v_cruise(self, CS, initial_speed: int) -> None:
     # initializing is handled by the PCM
