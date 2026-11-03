@@ -59,4 +59,15 @@ BO_ 1549 DOORS_LIGHTS: 8 XXX
  SG_ DOOR_OPEN_RL : 5|1@0+ (1,0) [0|1] "" XXX
  SG_ DOOR_OPEN_RR : 6|1@0+ (1,0) [0|1] "" XXX
 
+BO_ 756 EPEDAL_SETTINGS_2F4: 5 XXX
+ SG_ E_PEDAL_ENABLED : 8|1@1+ (1,0) [0|1] "" XXX
+
+BO_ 1459 EPEDAL_SETTINGS_5B3: 8 XXX
+ SG_ E_PEDAL_ENABLED : 15|1@1+ (1,0) [0|1] "" XXX
+
 VAL_ 1057 GEAR_SHIFTER 7 "B" 4 "D" 3 "N" 2 "R" 1 "P" ;
+VAL_ 756 E_PEDAL_ENABLED 0 "OFF" 1 "ON" ;
+VAL_ 1459 E_PEDAL_ENABLED 0 "OFF" 1 "ON" ;
+
+CM_ SG_ 756 E_PEDAL_ENABLED "e-Pedal setting state (0=OFF, 1=ON), not active braking or hold state. Observed on a user-reported ZE1 e+ G (2022-06); not verified across all LEAF models. Bus is not represented in this DBC.";
+CM_ SG_ 1459 E_PEDAL_ENABLED "e-Pedal setting state (0=OFF, 1=ON), not active braking or hold state. Observed on a user-reported ZE1 e+ G (2022-06); not verified across all LEAF models. Bus is not represented in this DBC.";
