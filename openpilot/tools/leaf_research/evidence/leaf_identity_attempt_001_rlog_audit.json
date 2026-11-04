@@ -1,0 +1,52 @@
+{
+  "route": "00000065--9c800d23ef",
+  "attempt": "de92078bebfe4b6da74e775a320d4b36",
+  "rlog_sha256": "71f82fadf36939891c6909750d88756ec1354b3275a54b65804e55ef6e46f363",
+  "sendcan": [
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "0221830000000000",
+      "mono_ns": 25360502377511
+    }
+  ],
+  "candidate_frames": [
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "0221830000000000",
+      "mono_ns": 25360502377511
+    },
+    {
+      "kind": "can",
+      "bus": 128,
+      "address": "0x75d",
+      "hex": "0221830000000000",
+      "mono_ns": 25360512498441
+    },
+    {
+      "kind": "can",
+      "bus": 2,
+      "address": "0x75d",
+      "hex": "0221830000000000",
+      "mono_ns": 25360512498441
+    },
+    {
+      "kind": "can",
+      "bus": 2,
+      "address": "0x77d",
+      "hex": "037f2111cccccccc",
+      "mono_ns": 25360531220204
+    },
+    {
+      "kind": "can",
+      "bus": 0,
+      "address": "0x77d",
+      "hex": "037f2111cccccccc",
+      "mono_ns": 25360531220204
+    }
+  ],
+  "request_to_reply_ms": 28.842693
+}

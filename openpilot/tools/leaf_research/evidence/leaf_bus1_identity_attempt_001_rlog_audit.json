@@ -1,0 +1,26 @@
+{
+  "route": "0000006b--c3ee659b32",
+  "sha256": "c868d98ff5adc2fce2b2e8c3029689c1730b4a9fd3cc40788ab8ced15e1383a0",
+  "sendcan": [
+    {
+      "mono_ns": 138268047901139,
+      "bus": 1,
+      "id": "0x75d",
+      "hex": "0322f18800000000"
+    }
+  ],
+  "can_75d": [
+    {
+      "mono_ns": 138268051328094,
+      "bus": 129,
+      "id": "0x75d",
+      "hex": "0322f18800000000"
+    }
+  ],
+  "can_77d": [],
+  "condition_samples": 107,
+  "all_conditions_stationary_park_brake_held": true,
+  "flow_control_sent": false,
+  "session_change_or_communication_control_sent": false,
+  "limitation": "No 77D reply in recorded segment. TX echo is not proof of ECU receipt."
+}

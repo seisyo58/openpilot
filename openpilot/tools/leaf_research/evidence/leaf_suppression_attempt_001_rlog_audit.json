@@ -1,0 +1,31 @@
+{
+  "rlog_sha256": "09f2413c0b1a27d4e9f57d600f77837fa96628710b88f9b7c7207540eff4b9a3",
+  "bus0_request_counts": {
+    "3e00": 1,
+    "1081": 3,
+    "2183": 1,
+    "10da": 1,
+    "22f188": 2,
+    "10c0": 1,
+    "2802": 1
+  },
+  "bus0_response_counts": {
+    "7f3e12": 2,
+    "5081": 5,
+    "7f1012": 2,
+    "7f2211": 4,
+    "50c0": 1,
+    "7f2811": 1
+  },
+  "stop_to_restore_request_ms": 26.20655400096439,
+  "target_continuity": {
+    "0x1c3": {
+      "frames_between_stop_and_restore": 2,
+      "max_gap_ms_in_review_window": 11.475318999146111
+    },
+    "0x2b0": {
+      "frames_between_stop_and_restore": 2,
+      "max_gap_ms_in_review_window": 11.475318999146111
+    }
+  }
+}

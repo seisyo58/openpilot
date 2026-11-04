@@ -1,0 +1,113 @@
+{
+  "source": "https://github.com/danjulio/can_logs/tree/847c1002b36b045af921558f4bcfe0307b612e83/2019_leaf_candumps/leafspy",
+  "sha256": "35278007b20f79e4dc1e909529f0860a65f075b050ed58294aafc79ee195a87d",
+  "records": [
+    {
+      "time": 1749416962.101447,
+      "record_channel": "1R11",
+      "address": "0x75d",
+      "hex": "0221830000000000"
+    },
+    {
+      "time": 1749416962.130703,
+      "record_channel": "2R11",
+      "address": "0x77d",
+      "hex": "037f217fffffffff"
+    },
+    {
+      "time": 1749416962.402393,
+      "record_channel": "1R11",
+      "address": "0x75d",
+      "hex": "0322f1a100000000"
+    },
+    {
+      "time": 1749416962.431219,
+      "record_channel": "2R11",
+      "address": "0x77d",
+      "hex": "037f2211ffffffff"
+    },
+    {
+      "time": 1749416970.531351,
+      "record_channel": "1R11",
+      "address": "0x707",
+      "hex": "0221830000000000"
+    },
+    {
+      "time": 1749416970.536987,
+      "record_channel": "2R11",
+      "address": "0x727",
+      "hex": "101a618335534132"
+    },
+    {
+      "time": 1749416970.537305,
+      "record_channel": "1R11",
+      "address": "0x707",
+      "hex": "30000a0000000000"
+    },
+    {
+      "time": 1749416970.53861,
+      "record_channel": "2R11",
+      "address": "0x727",
+      "hex": "2141444204180000"
+    },
+    {
+      "time": 1749416970.556308,
+      "record_channel": "2R11",
+      "address": "0x727",
+      "hex": "220000005f2a3604"
+    },
+    {
+      "time": 1749416970.569497,
+      "record_channel": "2R11",
+      "address": "0x727",
+      "hex": "2394610000008000"
+    },
+    {
+      "time": 1749416970.831914,
+      "record_channel": "1R11",
+      "address": "0x707",
+      "hex": "0221840000000000"
+    },
+    {
+      "time": 1749416970.843447,
+      "record_channel": "2R11",
+      "address": "0x727",
+      "hex": "1016618432383431"
+    },
+    {
+      "time": 1749416970.843714,
+      "record_channel": "1R11",
+      "address": "0x707",
+      "hex": "30000a0000000000"
+    },
+    {
+      "time": 1749416970.84526,
+      "record_channel": "2R11",
+      "address": "0x727",
+      "hex": "2139313832303033"
+    },
+    {
+      "time": 1749416970.856928,
+      "record_channel": "2R11",
+      "address": "0x727",
+      "hex": "2234304331414234"
+    },
+    {
+      "time": 1749416970.869112,
+      "record_channel": "2R11",
+      "address": "0x727",
+      "hex": "2331380000000000"
+    }
+  ],
+  "reassembled_727": [
+    {
+      "hex": "618335534132414442041800000000005f2a3604946100000080",
+      "ascii_with_escapes": "b'a\\x835SA2ADB\\x04\\x18\\x00\\x00\\x00\\x00\\x00_*6\\x04\\x94a\\x00\\x00\\x00\\x80'"
+    },
+    {
+      "hex": "61843238343139313832303033343043314142343138",
+      "ascii_with_escapes": "b'a\\x842841918200340C1AB418'"
+    }
+  ],
+  "scope": "Other owner vehicle. CRTD recording-channel labels are not comma bus indices. No self-vehicle transmission."
+}

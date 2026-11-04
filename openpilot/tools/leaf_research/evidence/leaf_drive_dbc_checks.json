@@ -1,0 +1,38 @@
+[
+  {
+    "route": "59",
+    "key": "b0_180",
+    "frames": 87054,
+    "mismatches": 0
+  },
+  {
+    "route": "59",
+    "key": "b0_292",
+    "frames": 43531,
+    "mismatches": 0
+  },
+  {
+    "route": "5a",
+    "key": "b0_180",
+    "frames": 63486,
+    "mismatches": 0
+  },
+  {
+    "route": "5a",
+    "key": "b0_292",
+    "frames": 31748,
+    "mismatches": 0
+  },
+  {
+    "route": "5c",
+    "key": "b0_180",
+    "frames": 200997,
+    "mismatches": 0
+  },
+  {
+    "route": "5c",
+    "key": "b0_292",
+    "frames": 100519,
+    "mismatches": 0
+  }
+]

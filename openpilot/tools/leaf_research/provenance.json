@@ -1,0 +1,423 @@
+{
+  "base_branch": "leaf-custom",
+  "base_commit": "7b28fbe1eb958af39df0f71143bd8e6238577098",
+  "experiment_source_commit": "a125cb9708",
+  "collected_at": "2026-11-05",
+  "files": [
+    {
+      "source": "outputs/leaf_2022_model_and_cancel_findings.md",
+      "destination": "docs/leaf_2022_model_and_cancel_findings.md",
+      "sha256": "b1557018361ab5264e0ccb5c38683615031122620fe3a1b43433303a381c23f9"
+    },
+    {
+      "source": "outputs/leaf_284e76wk2e_followup.md",
+      "destination": "docs/leaf_284e76wk2e_followup.md",
+      "sha256": "77605ce665668c735a879a8572c9f685607d18aa588c8c036cab70e7bc8ae8c7"
+    },
+    {
+      "source": "outputs/leaf_2aa_state_findings.md",
+      "destination": "docs/leaf_2aa_state_findings.md",
+      "sha256": "991560cee093d3fbcab33ce3efe7f879e928f2697813224c75b661890ac3f671"
+    },
+    {
+      "source": "outputs/leaf_5c_findings.md",
+      "destination": "docs/leaf_5c_findings.md",
+      "sha256": "fa52856e75a460cb70217748c2f3487f16e540d4577dfaa930304b37fef6ff7a"
+    },
+    {
+      "source": "outputs/leaf_acc_brake_switching.md",
+      "destination": "docs/leaf_acc_brake_switching.md",
+      "sha256": "1fe7c855432f7d9e5b72d328a9c146501bc7c8590a41f829cef17fc282b36b0e"
+    },
+    {
+      "source": "outputs/leaf_acc_cross_route_findings.md",
+      "destination": "docs/leaf_acc_cross_route_findings.md",
+      "sha256": "0afa63fc5723f4a9b0f4bdae1f1b1debb27f1daa5d50c70b1042639b55eac5d4"
+    },
+    {
+      "source": "outputs/leaf_acc_investigation.md",
+      "destination": "docs/leaf_acc_investigation.md",
+      "sha256": "44d031c5c49f3014eebcfb1287d3db181f5d41b20ded5977c4a274f719236b65"
+    },
+    {
+      "source": "outputs/leaf_adas_tx_suppression_plan.md",
+      "destination": "docs/leaf_adas_tx_suppression_plan.md",
+      "sha256": "f2bfe7d77eb60e1af9f90ca0f6c16522c9b4de7dc91a1e1ff76f9fad4c51cd16"
+    },
+    {
+      "source": "outputs/leaf_bounded_gyro_check.md",
+      "destination": "docs/leaf_bounded_gyro_check.md",
+      "sha256": "c1365d3a75f5a46a0f90e374ee33e684f6547200bb1d5b18eb33be9b1a4c5dcc"
+    },
+    {
+      "source": "outputs/leaf_braking_coordination_findings.md",
+      "destination": "docs/leaf_braking_coordination_findings.md",
+      "sha256": "0b250905056bdee9cf1989f62e8c705aee37884333e30b31730e3e050e11d7fd"
+    },
+    {
+      "source": "outputs/leaf_bus1_identity_attempt_001.md",
+      "destination": "docs/leaf_bus1_identity_attempt_001.md",
+      "sha256": "b9a44b13537b1125f1d8c19c8ef79e403b10cfd9910e68d5bba1592397a65c97"
+    },
+    {
+      "source": "outputs/leaf_bus1_identity_preparation.md",
+      "destination": "docs/leaf_bus1_identity_preparation.md",
+      "sha256": "214426164e236a76cf1b447a81fd5dd59e48682d8a5e9db8fa9ba69c0d19134f"
+    },
+    {
+      "source": "outputs/leaf_comma_ready_validation.md",
+      "destination": "docs/leaf_comma_ready_validation.md",
+      "sha256": "780be0094fb384698b9779fc12dcac88b9b5623c4ae4e5adc975578df52fdaaf"
+    },
+    {
+      "source": "outputs/leaf_daily_use_and_uds_stop_preparation.md",
+      "destination": "docs/leaf_daily_use_and_uds_stop_preparation.md",
+      "sha256": "bb9ec930cfe6d8b3ad71d7f93a7f575326e63b918b18424093d2eddca3e5d714"
+    },
+    {
+      "source": "outputs/leaf_diagnostic_identity_followup.md",
+      "destination": "docs/leaf_diagnostic_identity_followup.md",
+      "sha256": "892dcabe9e42f62212904f0bd8d32aa99b65261d0dfe2db6800a4bb60f413b55"
+    },
+    {
+      "source": "outputs/leaf_diagnostic_path_followup.md",
+      "destination": "docs/leaf_diagnostic_path_followup.md",
+      "sha256": "3c0b1f48605ca6c38f2858d8ae0b03ce7ac595e7ea48a358bfb23fd55b1c3edd"
+    },
+    {
+      "source": "outputs/leaf_drive_and_regen_findings.md",
+      "destination": "docs/leaf_drive_and_regen_findings.md",
+      "sha256": "00b168a8f390a7a7c8a6fa3a1d03d5892b169baf433ceca5c7a9408f8ffca5ae"
+    },
+    {
+      "source": "outputs/leaf_extended_observation_attempt_001.md",
+      "destination": "docs/leaf_extended_observation_attempt_001.md",
+      "sha256": "7b356fe4bd2f07cb80be4f05c502bcb00d5e71dbbef98a422f0fb7f278d1bb63"
+    },
+    {
+      "source": "outputs/leaf_handover_design.md",
+      "destination": "docs/leaf_handover_design.md",
+      "sha256": "acbbf0bff91dd1328534583958ea2d0a133c163494507f8df1c06e6244634940"
+    },
+    {
+      "source": "outputs/leaf_hold_design_assessment.md",
+      "destination": "docs/leaf_hold_design_assessment.md",
+      "sha256": "444322d47bb822488acb1434949497ba38f258ab1615c67628bfb6dd6336fabd"
+    },
+    {
+      "source": "outputs/leaf_hold_mode_assessment.md",
+      "destination": "docs/leaf_hold_mode_assessment.md",
+      "sha256": "85b8cc276608afce7d98bca08c7318ddd623bb583e604b09e0ff4fb18fe0ba2b"
+    },
+    {
+      "source": "outputs/leaf_hold_path_findings.md",
+      "destination": "docs/leaf_hold_path_findings.md",
+      "sha256": "53fd5f81b969714d63f04a417a99c4b6a299cecddce39877cf898acfe5c0e334"
+    },
+    {
+      "source": "outputs/leaf_identity_attempt_001.md",
+      "destination": "docs/leaf_identity_attempt_001.md",
+      "sha256": "4e2606b0ce19ff80dc3b007ae137cefcd9067958affcdb15c3679d872e66075a"
+    },
+    {
+      "source": "outputs/leaf_identity_batch_attempt_001.md",
+      "destination": "docs/leaf_identity_batch_attempt_001.md",
+      "sha256": "7d2e2cfc880813fe48ab4ff08b743422be05d6de094b315ae632e38fdf4fe0dd"
+    },
+    {
+      "source": "outputs/leaf_identity_batch_plan.md",
+      "destination": "docs/leaf_identity_batch_plan.md",
+      "sha256": "d1582415d4a817a48b1cea5f1c12da20024ed57bd3643bbbfae0d3da8848303c"
+    },
+    {
+      "source": "outputs/leaf_identity_batch_ready.md",
+      "destination": "docs/leaf_identity_batch_ready.md",
+      "sha256": "312294083fff6d41bb2b8cb094e6f5040b9ac3de9290b86de05de18bec736475"
+    },
+    {
+      "source": "outputs/leaf_identity_experiment_next.md",
+      "destination": "docs/leaf_identity_experiment_next.md",
+      "sha256": "c3e0c2f8e3bac80d0089253dd746ffc806d8c4879c39bcd7500e866ded3c596b"
+    },
+    {
+      "source": "outputs/leaf_identity_probe_ready.md",
+      "destination": "docs/leaf_identity_probe_ready.md",
+      "sha256": "d3ae226173e2e9027ce018d9dd73e1a198f410692037993fa9c3c7f9a7c58458"
+    },
+    {
+      "source": "outputs/leaf_identity_uds_probe_ready.md",
+      "destination": "docs/leaf_identity_uds_probe_ready.md",
+      "sha256": "22567f01105432ebfbd3b1d88efab98a4381caeb0efc042e012c7986283e15fa"
+    },
+    {
+      "source": "outputs/leaf_long_request_calibration.md",
+      "destination": "docs/leaf_long_request_calibration.md",
+      "sha256": "ef8a5246349a2ecc45de888d477f233c5c97f91ecae6975c0ef0c6f1f405ebb8"
+    },
+    {
+      "source": "outputs/leaf_longitudinal_branch_status.md",
+      "destination": "docs/leaf_longitudinal_branch_status.md",
+      "sha256": "e32e1a13cc94d008204eca9ba9352fa161f04c59dfd0452b33c0c2bfca551a40"
+    },
+    {
+      "source": "outputs/leaf_longitudinal_transport_findings.md",
+      "destination": "docs/leaf_longitudinal_transport_findings.md",
+      "sha256": "17a00e1ae1530abebae9d4b8e1abd850404d37aba7e6e3b29b368f095d49086b"
+    },
+    {
+      "source": "outputs/leaf_matched_braking_and_imu_findings.md",
+      "destination": "docs/leaf_matched_braking_and_imu_findings.md",
+      "sha256": "181b10e1a00460cbb66397be8726f7eb5b3001bbe8a167bc45f311ef35507ad7"
+    },
+    {
+      "source": "outputs/leaf_minimal_hardware_options.md",
+      "destination": "docs/leaf_minimal_hardware_options.md",
+      "sha256": "7e47680b45cbeff2e1effca1fc5c28d197976a42ffe5c66a5eaca262db82086a"
+    },
+    {
+      "source": "outputs/leaf_observation_update.md",
+      "destination": "docs/leaf_observation_update.md",
+      "sha256": "9676180774d571ec43a4e73abef9a460c20cce7bc87f559a083185517543d601"
+    },
+    {
+      "source": "outputs/leaf_passive_session_attempt_001.md",
+      "destination": "docs/leaf_passive_session_attempt_001.md",
+      "sha256": "5abf5780f03ea52679f8026299ed600fd7c60f1bb65da7de70777bbfdc8f5334"
+    },
+    {
+      "source": "outputs/leaf_recovery_candidates_followup.md",
+      "destination": "docs/leaf_recovery_candidates_followup.md",
+      "sha256": "7fbfe8cac862a8d8acf99a1b345052ac116258b3f7cbef3b9e7f675378aa08a9"
+    },
+    {
+      "source": "outputs/leaf_recovery_review_20261104.md",
+      "destination": "docs/leaf_recovery_review_20261104.md",
+      "sha256": "cc9f137900ec5c8483d04cf67fa2ffe94bd43370367417266f1062682df4545d"
+    },
+    {
+      "source": "outputs/leaf_sender_and_recovery_followup_20261104.md",
+      "destination": "docs/leaf_sender_and_recovery_followup_20261104.md",
+      "sha256": "8cbb3f1b2e48cafa90b4cfb068e1b4fa4e70280d09a8daa4a37360833287496b"
+    },
+    {
+      "source": "outputs/leaf_service_information_request.md",
+      "destination": "docs/leaf_service_information_request.md",
+      "sha256": "983bb20b560eed98a751d47e99daae8cf27f40a74ad9ec516d65407a065b16cc"
+    },
+    {
+      "source": "outputs/leaf_service_information_scope.md",
+      "destination": "docs/leaf_service_information_scope.md",
+      "sha256": "98775d1693f327d6010bb895576ec35a4a62d2075da0a5f0d58f9d7fecaeab6a"
+    },
+    {
+      "source": "outputs/leaf_session_broadcast_findings.md",
+      "destination": "docs/leaf_session_broadcast_findings.md",
+      "sha256": "5d87aa64ce211d5341345f6ecdc14f3f3eaf77bd7c8932e749274556e2bf6a5a"
+    },
+    {
+      "source": "outputs/leaf_session_observation_attempt_001.md",
+      "destination": "docs/leaf_session_observation_attempt_001.md",
+      "sha256": "163dac4188c601257847e49ae5e7715144714f861d2951a703dc5410f86ea413"
+    },
+    {
+      "source": "outputs/leaf_session_observation_probe_plan.md",
+      "destination": "docs/leaf_session_observation_probe_plan.md",
+      "sha256": "6ee6c223c92d099dc272c04460f3e949705ff9d07fa3dc7316bcd757cbaab12b"
+    },
+    {
+      "source": "outputs/leaf_session_probe_attempt_002.md",
+      "destination": "docs/leaf_session_probe_attempt_002.md",
+      "sha256": "252164fd366811dfc3a4e440eace728d031ace1277dd815b7c501b486432e591"
+    },
+    {
+      "source": "outputs/leaf_session_probe_implementation.md",
+      "destination": "docs/leaf_session_probe_implementation.md",
+      "sha256": "4b5bc5e469cbf596dfe17f07f94ac18504e964d2130c1e3f2e4aa53b25e46385"
+    },
+    {
+      "source": "outputs/leaf_session_probe_ready.md",
+      "destination": "docs/leaf_session_probe_ready.md",
+      "sha256": "e8a348d4ccbf868c010b35f1d9388bec229358805260c5dfa0c3fd7c5a6891c8"
+    },
+    {
+      "source": "outputs/leaf_stationary_engage_findings.md",
+      "destination": "docs/leaf_stationary_engage_findings.md",
+      "sha256": "008440dbdd92503d0b562baab3f9dade6060ca10dc0c440480f27695456b2f51"
+    },
+    {
+      "source": "outputs/leaf_stationary_epedal_switch_findings.md",
+      "destination": "docs/leaf_stationary_epedal_switch_findings.md",
+      "sha256": "2be208f5a473dbb3543ec1d9c4d5e94092e06083f97d614fac4e6b35ea15affa"
+    },
+    {
+      "source": "outputs/leaf_suppression_attempt_001.md",
+      "destination": "docs/leaf_suppression_attempt_001.md",
+      "sha256": "68482f42f483d7a10ed1fa99542cb35f6785499075c9198c550d1eec7380d44e"
+    },
+    {
+      "source": "outputs/leaf_suppression_trial_ready.md",
+      "destination": "docs/leaf_suppression_trial_ready.md",
+      "sha256": "dde8893781966aed727d868f9d6c5eaa016c2522be6b900989e270f841ad776f"
+    },
+    {
+      "source": "outputs/leaf_switch_deep_findings.md",
+      "destination": "docs/leaf_switch_deep_findings.md",
+      "sha256": "0898e5aa773500724e77df2a9536809b0fc53e8a3da8a87b2227f800728a0a6f"
+    },
+    {
+      "source": "outputs/leaf_switch_rule_findings.md",
+      "destination": "docs/leaf_switch_rule_findings.md",
+      "sha256": "fcff3e754419fecf4b7c1235afb437357b6113f7732126411b8adb3e5aaa5bd7"
+    },
+    {
+      "source": "outputs/leaf_total_deceleration_request.md",
+      "destination": "docs/leaf_total_deceleration_request.md",
+      "sha256": "c01c80ad17712cd89f17ca43505f32866d2577087be0606f5f51945c9255741b"
+    },
+    {
+      "source": "outputs/leaf_uds_communication_attempt_001.md",
+      "destination": "docs/leaf_uds_communication_attempt_001.md",
+      "sha256": "e8a22a742f0295c98e9002fe5ec9925f9dc4ca3ea797c73cf16f2004069c4b25"
+    },
+    {
+      "source": "outputs/leaf_uds_communication_probe_plan.md",
+      "destination": "docs/leaf_uds_communication_probe_plan.md",
+      "sha256": "fbfcc805ff66b7382bd3af29f30c793e005fa4de1149efc2374bcef3898866ff"
+    },
+    {
+      "source": "outputs/leaf_uds_communication_probe_ready.md",
+      "destination": "docs/leaf_uds_communication_probe_ready.md",
+      "sha256": "5ebfc1a2b9e71ccf5dcfd588f07f4a2b9fe479d7024ed20028c80d09689e3ffb"
+    },
+    {
+      "source": "outputs/leaf_uds_session_attempt_001.md",
+      "destination": "docs/leaf_uds_session_attempt_001.md",
+      "sha256": "289482b9874bd3cda6d662f557f9ea1d9a67c46de85fcf576226c8e4d8efb43f"
+    },
+    {
+      "source": "outputs/leaf_uds_session_probe_plan.md",
+      "destination": "docs/leaf_uds_session_probe_plan.md",
+      "sha256": "8646291c0c13c96a1997c49e925ee9412e4b2406db4a69c9cbe470dce3c448a5"
+    },
+    {
+      "source": "outputs/leaf_uds_session_probe_ready.md",
+      "destination": "docs/leaf_uds_session_probe_ready.md",
+      "sha256": "5791231332b07652ddede42a6b3ccd831532464455b0940fecca6e3eb6ec9063"
+    },
+    {
+      "source": "outputs/leaf_unarmed_startup_validation.md",
+      "destination": "docs/leaf_unarmed_startup_validation.md",
+      "sha256": "3bbc6c0626f860dc06ff4ebb4c967040cadc572972aa8035ac42f104c2a1a12e"
+    },
+    {
+      "source": "work/leaf-longitudinal/openpilot/tools/leaf_longitudinal/monitor.py",
+      "destination": "monitor.py",
+      "sha256": "d35e71dc9e1b2b1d11d6a2256cf1b3a33f66226feced81e81d457238eb82074e"
+    },
+    {
+      "source": "work/leaf-longitudinal/openpilot/tools/leaf_longitudinal/tests/test_monitor.py",
+      "destination": "tests/test_monitor.py",
+      "sha256": "faecafdef99f2daa29600aca5ce6e0b8d942e83f40fd54de3bcacafac9381194"
+    },
+    {
+      "source": "outputs/leaf_longitudinal_candidates.dbc",
+      "destination": "dbc/leaf_longitudinal_candidates.dbc",
+      "sha256": "1bd9408838a3c26ff35351af1c9bd0d44174a69988a537bd82b13c70df0a10cf"
+    },
+    {
+      "source": "outputs/leaf_bus1_identity_attempt_001_rlog_audit.json",
+      "destination": "evidence/leaf_bus1_identity_attempt_001_rlog_audit.json",
+      "sha256": "594ef00b35ba4cb52788e296bbc42abd192165c16344a8a85a304c56638f542c"
+    },
+    {
+      "source": "outputs/leaf_extended_observation_attempt_001_rlog_audit.json",
+      "destination": "evidence/leaf_extended_observation_attempt_001_rlog_audit.json",
+      "sha256": "857df8dae2cedfd9c2ac47be58f1deaecf2e91f79c5351026174f082267ec6ee"
+    },
+    {
+      "source": "outputs/leaf_identity_attempt_001_rlog_audit.json",
+      "destination": "evidence/leaf_identity_attempt_001_rlog_audit.json",
+      "sha256": "7ab6793b1ddbe59a1b816ab42abc5fef40c9c8aa0d1a3d0774ced6500e69392f"
+    },
+    {
+      "source": "outputs/leaf_identity_batch_attempt_001_rlog_audit.json",
+      "destination": "evidence/leaf_identity_batch_attempt_001_rlog_audit.json",
+      "sha256": "93b240f37fd966546d773107ea34a7f24e83eb952f2318481d8f4637a8e06262"
+    },
+    {
+      "source": "outputs/leaf_passive_session_attempt_001_rlog_audit.json",
+      "destination": "evidence/leaf_passive_session_attempt_001_rlog_audit.json",
+      "sha256": "f15ff7cfe4b3aa9522a665a17c59d790ad9f9ccf7b33d6b401b7f8e435342c56"
+    },
+    {
+      "source": "outputs/leaf_session_observation_attempt_001_rlog_audit.json",
+      "destination": "evidence/leaf_session_observation_attempt_001_rlog_audit.json",
+      "sha256": "98745267658045a8b7b989662ebc9832d2122e29a4f114946e28503e25041751"
+    },
+    {
+      "source": "outputs/leaf_session_probe_attempt_002_rlog_audit.json",
+      "destination": "evidence/leaf_session_probe_attempt_002_rlog_audit.json",
+      "sha256": "42332ef47ffeaf46cc567162ca6f5ee9f92c87af5973b02f0b66908acefd8119"
+    },
+    {
+      "source": "outputs/leaf_suppression_attempt_001_rlog_audit.json",
+      "destination": "evidence/leaf_suppression_attempt_001_rlog_audit.json",
+      "sha256": "83c3722970f8fab6cde16259dd23f38ee5946ec43c5ee4e288edc4d5a3bbbfe3"
+    },
+    {
+      "source": "outputs/leaf_uds_communication_attempt_001_rlog_audit.json",
+      "destination": "evidence/leaf_uds_communication_attempt_001_rlog_audit.json",
+      "sha256": "f9db708f59e0d220161aeff9ac6694040a2a2ec7819a7933a318dcbe2b69c53e"
+    },
+    {
+      "source": "outputs/leaf_uds_session_attempt_001_rlog_audit.json",
+      "destination": "evidence/leaf_uds_session_attempt_001_rlog_audit.json",
+      "sha256": "2a102ebb6d9ce132d5c4a9a08080f09facc562cdf07506a11c326b5b58497d50"
+    },
+    {
+      "source": "outputs/leaf_2aa_state_dbc_checks.json",
+      "destination": "evidence/leaf_2aa_state_dbc_checks.json",
+      "sha256": "36a8559349b599d28a4bd82033aa6990c9d8a36b09d986f39f81f649f0fb1d2d"
+    },
+    {
+      "source": "outputs/leaf_drive_dbc_checks.json",
+      "destination": "evidence/leaf_drive_dbc_checks.json",
+      "sha256": "f67dac3afbffe0b167c9da9b09e0b0d40f3ecaf5d69470c6b5bec8e8dbf52f40"
+    },
+    {
+      "source": "outputs/leaf_observer_dbc_checks.json",
+      "destination": "evidence/leaf_observer_dbc_checks.json",
+      "sha256": "ddaa24b66fde342608315ed3847df5d9b62470cd1f0c9bacf2754ad8a02691ce"
+    },
+    {
+      "source": "outputs/leaf_stationary_epedal_switch_results.json",
+      "destination": "evidence/leaf_stationary_epedal_switch_results.json",
+      "sha256": "caa20bbbad025cd252c6dde2ee82c19e1bafa841b67a5cbfc2ec51975a2b9ac3"
+    },
+    {
+      "source": "outputs/leaf_public_2019_identity_audit.json",
+      "destination": "evidence/leaf_public_2019_identity_audit.json",
+      "sha256": "e098d45d34e0456b812d89851b7ae3882292c9c6073cc07aea03984027e64dae"
+    },
+    {
+      "source": "outputs/leaf_diagnostic_bus_visibility.json",
+      "destination": "evidence/leaf_diagnostic_bus_visibility.json",
+      "sha256": "9da387cb9c66a7ea8b57ef44171abb4cf488772809100a3b24d4dd391fe97c36"
+    },
+    {
+      "source": "outputs/leaf_passive_session_broadcast_scan.json",
+      "destination": "evidence/leaf_passive_session_broadcast_scan.json",
+      "sha256": "b440909eb4525f5ecbf7e5f647882c336ad9837f8a4bf6cc940b7e3ecb35f0aa"
+    },
+    {
+      "source": "outputs/leaf_session_broadcast_scan.json",
+      "destination": "evidence/leaf_session_broadcast_scan.json",
+      "sha256": "11315046a950c5745b42121350659e499df277a4033e68a3371f419a0cf91811"
+    },
+    {
+      "source": "outputs/leaf_bounded_gyro_check.json",
+      "destination": "evidence/leaf_bounded_gyro_check.json",
+      "sha256": "b8a993fdf203ad961a0caf9c8bda821a70b83c74ffe2e0fc677e55aaf83385b7"
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "route": "00000066--d15ace42c0",
+  "attempt": "3dda6fedc57c4342b7848ab23e40dd54",
+  "sha256": "60885d69980394d5a33a3343dae57e49b8f082af1b5f1639733677a35d8ab521",
+  "sendcan": [
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "0322f18800000000",
+      "mono_ns": 27237519504048
+    },
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "3000000000000000",
+      "mono_ns": 27237555763911
+    },
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "0322f18700000000",
+      "mono_ns": 27237790631132
+    },
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "3000000000000000",
+      "mono_ns": 27237825271855
+    },
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "0322f19100000000",
+      "mono_ns": 27238073826193
+    },
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "3000000000000000",
+      "mono_ns": 27238105160513
+    }
+  ],
+  "reassembled_responses": [
+    {
+      "payload_hex": "62f188323834453736574b3245",
+      "identifier": "f188",
+      "identity_ascii": "284E76WK2E",
+      "first_ns": 27237541682167,
+      "last_ns": 27237561446004,
+      "query_to_first_reply_ms": 22.178119,
+      "query_to_complete_reply_ms": 41.941956,
+      "complete_reply_to_next_query_ms": 229.185128
+    },
+    {
+      "payload_hex": "62f187323834453736574b3245",
+      "identifier": "f187",
+      "identity_ascii": "284E76WK2E",
+      "first_ns": 27237811252454,
+      "last_ns": 27237831680290,
+      "query_to_first_reply_ms": 20.621322,
+      "query_to_complete_reply_ms": 41.049158,
+      "complete_reply_to_next_query_ms": 242.145903
+    },
+    {
+      "payload_hex": "62f191323834453736574b3245",
+      "identifier": "f191",
+      "identity_ascii": "284E76WK2E",
+      "first_ns": 27238092060680,
+      "last_ns": 27238111028696,
+      "query_to_first_reply_ms": 18.234487,
+      "query_to_complete_reply_ms": 37.202503
+    }
+  ],
+  "candidate_frame_count": 30
+}

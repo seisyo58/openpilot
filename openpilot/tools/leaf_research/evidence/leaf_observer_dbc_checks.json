@@ -1,0 +1,131 @@
+{
+  "checks": [
+    {
+      "route": "59",
+      "key": "b1_2b0",
+      "frames": 86888,
+      "fields": 1,
+      "mismatches": 0
+    },
+    {
+      "route": "59",
+      "key": "b1_1c3",
+      "frames": 86888,
+      "fields": 2,
+      "mismatches": 0
+    },
+    {
+      "route": "59",
+      "key": "b0_1cb",
+      "frames": 87091,
+      "fields": 2,
+      "mismatches": 0
+    },
+    {
+      "route": "59",
+      "key": "b0_2aa",
+      "frames": 43547,
+      "fields": 2,
+      "mismatches": 0
+    },
+    {
+      "route": "59",
+      "key": "b1_2d4",
+      "frames": 43454,
+      "fields": 1,
+      "mismatches": 0
+    },
+    {
+      "route": "59",
+      "key": "b1_28f",
+      "frames": 43444,
+      "fields": 1,
+      "mismatches": 0
+    },
+    {
+      "route": "5a",
+      "key": "b1_2b0",
+      "frames": 63322,
+      "fields": 1,
+      "mismatches": 0
+    },
+    {
+      "route": "5a",
+      "key": "b1_1c3",
+      "frames": 63322,
+      "fields": 2,
+      "mismatches": 0
+    },
+    {
+      "route": "5a",
+      "key": "b0_1cb",
+      "frames": 63516,
+      "fields": 2,
+      "mismatches": 0
+    },
+    {
+      "route": "5a",
+      "key": "b0_2aa",
+      "frames": 31757,
+      "fields": 2,
+      "mismatches": 0
+    },
+    {
+      "route": "5a",
+      "key": "b1_2d4",
+      "frames": 31666,
+      "fields": 1,
+      "mismatches": 0
+    },
+    {
+      "route": "5a",
+      "key": "b1_28f",
+      "frames": 31662,
+      "fields": 1,
+      "mismatches": 0
+    },
+    {
+      "route": "5c",
+      "key": "b1_2b0",
+      "frames": 200812,
+      "fields": 1,
+      "mismatches": 0
+    },
+    {
+      "route": "5c",
+      "key": "b1_1c3",
+      "frames": 200812,
+      "fields": 2,
+      "mismatches": 0
+    },
+    {
+      "route": "5c",
+      "key": "b0_1cb",
+      "frames": 201098,
+      "fields": 2,
+      "mismatches": 0
+    },
+    {
+      "route": "5c",
+      "key": "b0_2aa",
+      "frames": 100549,
+      "fields": 2,
+      "mismatches": 0
+    },
+    {
+      "route": "5c",
+      "key": "b1_2d4",
+      "frames": 100430,
+      "fields": 1,
+      "mismatches": 0
+    },
+    {
+      "route": "5c",
+      "key": "b1_28f",
+      "frames": 100406,
+      "fields": 1,
+      "mismatches": 0
+    }
+  ],
+  "dlc_checks": "passed for all six message definitions on original route5c windows"
+}

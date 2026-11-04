@@ -1,0 +1,38 @@
+{
+  "route": "00000069--0ea8b9c7d1",
+  "attempt": "5db6030ecf0649f49795f34811e8bb95",
+  "sha256": "5f5c53e15f5789f1a3234512fba910e5490f3e53a85532c05eb5dd63e78563e6",
+  "sendcan": [
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "0322f18800000000",
+      "mono_ns": 132772773069941
+    },
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "3000000000000000",
+      "mono_ns": 132772804953402
+    },
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "0322f18600000000",
+      "mono_ns": 132772828735271
+    }
+  ],
+  "f186_negative": {
+    "kind": "can",
+    "bus": 0,
+    "address": "0x77d",
+    "hex": "037f2231cccccccc",
+    "mono_ns": 132772852194390
+  },
+  "request_to_reply_ms": 23.459119,
+  "session_change_requests": 0,
+  "communication_control_requests": 0
+}

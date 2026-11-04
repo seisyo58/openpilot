@@ -1,0 +1,74 @@
+{
+  "route": "0000006a--67fc602b8d",
+  "sha256": "9ad87cdd7ede38d99692351f3ed8ab461659e4c574617c10898fed18babafb42",
+  "sendcan": [
+    {
+      "mono_ns": 134365717689799,
+      "hex": "0322f18800000000"
+    },
+    {
+      "mono_ns": 134365757889408,
+      "hex": "3000000000000000"
+    },
+    {
+      "mono_ns": 134365786657905,
+      "hex": "0210010000000000"
+    },
+    {
+      "mono_ns": 134366347464804,
+      "hex": "0210030000000000"
+    },
+    {
+      "mono_ns": 134366386251761,
+      "hex": "0322f18600000000"
+    },
+    {
+      "mono_ns": 134366424910128,
+      "hex": "0210010000000000"
+    },
+    {
+      "mono_ns": 134366465873718,
+      "hex": "0322f18600000000"
+    }
+  ],
+  "diagnostic_replies": [
+    {
+      "mono_ns": 134365742707039,
+      "hex": "100d62f188323834"
+    },
+    {
+      "mono_ns": 134365763291329,
+      "hex": "21453736574b3245"
+    },
+    {
+      "mono_ns": 134365811860294,
+      "hex": "065001003201f4cc"
+    },
+    {
+      "mono_ns": 134366371995033,
+      "hex": "065003003201f4cc"
+    },
+    {
+      "mono_ns": 134366412440153,
+      "hex": "037f2231cccccccc"
+    },
+    {
+      "mono_ns": 134366451954165,
+      "hex": "065001003201f4cc"
+    },
+    {
+      "mono_ns": 134366492434388,
+      "hex": "037f2231cccccccc"
+    }
+  ],
+  "f186_negative_replies": 2,
+  "stop_requests": 0,
+  "condition_samples": 132,
+  "all_conditions_stationary_park_brake_held": true,
+  "restore_ack_mono_ns": 134366451954165,
+  "targets_in_half_second_after_final_read": {
+    "0x1c3": 50,
+    "0x2b0": 50
+  },
+  "three_second_interval_attempted": false
+}

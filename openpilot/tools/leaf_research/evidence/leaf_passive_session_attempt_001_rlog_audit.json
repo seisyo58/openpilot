@@ -1,0 +1,86 @@
+{
+  "route": "0000006c--4fcd507cdc",
+  "sha256": "a7ef716e386a14b168c7ddaada4de88f5d77b979359fcd611e70f88c69aaac4e",
+  "sendcan": [
+    {
+      "mono_ns": 138759962433184,
+      "bus": 0,
+      "id": "0x75d",
+      "hex": "0322f18800000000"
+    },
+    {
+      "mono_ns": 138759994708264,
+      "bus": 0,
+      "id": "0x75d",
+      "hex": "3000000000000000"
+    },
+    {
+      "mono_ns": 138760015957189,
+      "bus": 0,
+      "id": "0x75d",
+      "hex": "0210010000000000"
+    },
+    {
+      "mono_ns": 138760279701833,
+      "bus": 0,
+      "id": "0x75d",
+      "hex": "0210030000000000"
+    },
+    {
+      "mono_ns": 138763388051391,
+      "bus": 0,
+      "id": "0x75d",
+      "hex": "0210010000000000"
+    }
+  ],
+  "session_replies": [
+    {
+      "mono_ns": 138760042003418,
+      "hex": "065001003201f4cc"
+    },
+    {
+      "mono_ns": 138760300955084,
+      "hex": "065003003201f4cc"
+    },
+    {
+      "mono_ns": 138763412010866,
+      "hex": "065001003201f4cc"
+    }
+  ],
+  "all_77d_bus0": [
+    {
+      "mono_ns": 138759982106917,
+      "hex": "100d62f188323834"
+    },
+    {
+      "mono_ns": 138760001766795,
+      "hex": "21453736574b3245"
+    },
+    {
+      "mono_ns": 138760042003418,
+      "hex": "065001003201f4cc"
+    },
+    {
+      "mono_ns": 138760300955084,
+      "hex": "065003003201f4cc"
+    },
+    {
+      "mono_ns": 138763412010866,
+      "hex": "065001003201f4cc"
+    }
+  ],
+  "extension_reply_to_restore_request_s": 3.087096307,
+  "sendcan_during_passive_interval": 0,
+  "condition_samples": 402,
+  "all_conditions_stationary_park_brake_held": true,
+  "raw_targets_in_passive_interval": {
+    "0x1c3": {
+      "frames": 309,
+      "max_gap_ms": 12.26786
+    },
+    "0x2b0": {
+      "frames": 309,
+      "max_gap_ms": 12.26786
+    }
+  }
+}

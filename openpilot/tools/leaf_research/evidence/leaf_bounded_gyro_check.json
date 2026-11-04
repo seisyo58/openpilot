@@ -1,0 +1,65 @@
+{
+  "scope": "three representative windows only; selection based on median numeric request, not outcome",
+  "gyro_samples": 6280,
+  "stationary_bias_samples": 3811,
+  "device_gyro_bias_rad_s": [
+    0.0012217304902151227,
+    0.009468411095440388,
+    0.0064140851609408855
+  ],
+  "reference": "0x292 with upstream scale; not a calibrated ground truth",
+  "correction": "pitch-only rotation into window-start attitude; no roll/yaw correction, no absolute grade removal; fixed100ms centered smoothing and prior70ms timing offset",
+  "windows": [
+    {
+      "start": 581.656225995,
+      "end": 586.406287096,
+      "pressure_median": 46.0,
+      "selection_quantile": 0.2,
+      "samples": 86,
+      "max_pitch_change_deg": 1.389974286097861,
+      "max_yaw_rate_rad_s": 0.05128361577174071,
+      "uncorrected_centered_rmse": 0.0801899261293701,
+      "corrected_centered_rmse": 0.09665708726642702,
+      "uncorrected_locked_centered_rmse": 0.07303261668227447,
+      "corrected_locked_centered_rmse": 0.09569659529877206,
+      "max_correction_mps2": 0.2143851624491463,
+      "centered_error_change_pct": 20.53519928487091
+    },
+    {
+      "start": 805.857118909,
+      "end": 813.857118909,
+      "pressure_median": 120.0,
+      "selection_quantile": 0.5,
+      "samples": 150,
+      "max_pitch_change_deg": 0.705036703793925,
+      "max_yaw_rate_rad_s": 0.02953413593265512,
+      "uncorrected_centered_rmse": 0.08667146538698188,
+      "corrected_centered_rmse": 0.07919739828528438,
+      "uncorrected_locked_centered_rmse": 0.07474164173427657,
+      "corrected_locked_centered_rmse": 0.07110562744986895,
+      "max_correction_mps2": 0.1186442998382573,
+      "centered_error_change_pct": -8.623446099966491
+    },
+    {
+      "start": 689.159311466,
+      "end": 697.159311466,
+      "pressure_median": 213.0,
+      "selection_quantile": 0.8,
+      "samples": 151,
+      "max_pitch_change_deg": 0.6099617139299679,
+      "max_yaw_rate_rad_s": 0.027466867760776083,
+      "uncorrected_centered_rmse": 0.09199505164812051,
+      "corrected_centered_rmse": 0.07826554481315949,
+      "uncorrected_locked_centered_rmse": 0.07364180763645087,
+      "corrected_locked_centered_rmse": 0.08051655642915931,
+      "max_correction_mps2": 0.10299202544381303,
+      "centered_error_change_pct": -14.924179712922115
+    }
+  ],
+  "uncorrected_centered_rmse_pooled": 0.0874226781472049,
+  "corrected_centered_rmse_pooled": 0.08304985834978905,
+  "uncorrected_locked_centered_rmse_pooled": 0.07393588025457638,
+  "corrected_locked_centered_rmse_pooled": 0.08077300843795204,
+  "rotation_sign_sanity_check": "passed for stationary gravity rotated through three preset angles",
+  "decision": "Stop this limited gyro investigation: no consistent improvement in agreement with0x292."
+}

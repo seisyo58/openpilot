@@ -1,0 +1,89 @@
+VERSION "Observation only - unverified Leaf IC longitudinal candidates"
+
+NS_ :
+    CM_
+    BA_DEF_
+    BA_
+    VAL_
+
+BS_:
+
+BU_: UNKNOWN OBSERVER
+
+BO_ 688 LONG_REQUEST_CANDIDATE: 8 UNKNOWN
+ SG_ RAW_HIGH8 : 8|8@1+ (1,0) [0|255] "raw" OBSERVER
+ SG_ RAW_LOW4 : 16|4@1+ (1,0) [0|15] "raw" OBSERVER
+ SG_ RAW_FRACTION2 : 58|2@1+ (1,0) [0|3] "raw" OBSERVER
+ SG_ CARRY_HIGH4_CANDIDATE : 20|4@1+ (1,0) [0|15] "raw" OBSERVER
+ SG_ ALT_HIGH4_CANDIDATE : 12|4@1+ (1,0) [0|15] "raw" OBSERVER
+ SG_ ALT_LOW8_FROM_INVERSE : 0|8@1+ (-1,255) [0|255] "raw" OBSERVER
+ SG_ LONG_ACTIVE_CANDIDATE : 38|1@1+ (1,0) [0|1] "" OBSERVER
+ SG_ OWNERSHIP_RAW : 24|8@1+ (1,0) [0|255] "raw" OBSERVER
+ SG_ COUNTER4 : 52|4@1+ (1,0) [0|15] "" OBSERVER
+
+BO_ 451 BRAKE_REQUEST_CANDIDATE: 8 UNKNOWN
+ SG_ PRESSURE_RAW10_CANDIDATE : 5|10@0+ (1,0) [0|1023] "raw" OBSERVER
+ SG_ BRAKE_ACTIVE_CANDIDATE : 47|1@1+ (1,0) [0|1] "" OBSERVER
+ SG_ MODE_BIT2_UNKNOWN : 42|1@1+ (1,0) [0|1] "" OBSERVER
+ SG_ COUNTER2 : 40|2@1+ (1,0) [0|3] "" OBSERVER
+ SG_ CHECKSUM : 56|8@1+ (1,0) [0|255] "" OBSERVER
+
+CM_ "Receive-only observation definitions. For route 00000059--02589b1b20 use bus 1 for 0x2B0/0x1C3 and bus 0 for 0x1D6/0x1CB. No transmission or physical calibration has been validated. This is a standalone candidate DBC, not a replacement vehicle DBC.";
+CM_ BO_ 688 "StarPilot-compatible observational grouping: combined raw = 4 * (16 * RAW_HIGH8 + RAW_LOW4) + RAW_FRACTION2. Inactive pattern is labeled 5320 and special pattern 2518 by this grouping. Inverse/fraction redundancy matches 86888 frames, but numerical bit significance and physical scaling are NOT established. Alternative nibble weighting produces a smoother trace; neither numerical interpretation is validated.";
+CM_ SG_ 688 ALT_HIGH4_CANDIDATE "Earlier alternative observational code = 4 * (256 * ALT_HIGH4_CANDIDATE + ALT_LOW8_FROM_INVERSE) + RAW_FRACTION2. In both routes this removes most carry-boundary jumps and puts six moving-brake release values at 4185..4191. Latest normal-only interpretation uses CARRY_HIGH4_CANDIDATE instead. Units and acceptance remain unverified. This older grouping labels the same inactive/special byte patterns as 5260/2398, respectively.";
+CM_ BO_ 451 "Public experimental 10-bit brake-request layout, NOT the upstream 9-bit field. All 86888 frames match the additive checksum. Raw range previously observed 0..829. Later route data must be evaluated separately. Physical units and whether the request is friction-only remain unvalidated.";
+CM_ SG_ 451 MODE_BIT2_UNKNOWN "Mode semantics unresolved. Across routes 59/5a/5c the bit remains high with zero numeric demand in 4713/2762/14881 frames. Bit7 exactly matches positive raw10 in all 351022 frames. Do not derive bit2 solely from positive demand.";
+
+BO_ 470 EPEDAL_REQUEST_CANDIDATE: 8 UNKNOWN
+ SG_ FIRST_WORD_RAW16 : 7|16@0+ (1,0) [0|65535] "raw" OBSERVER
+ SG_ SECOND_WORD_RAW16 : 23|16@0+ (1,0) [0|65535] "raw" OBSERVER
+
+BO_ 459 BRAKE_COORDINATION_CANDIDATE: 7 UNKNOWN
+ SG_ FIRST_FIELD_RAW11 : 7|11@0+ (1,0) [0|2047] "raw" OBSERVER
+ SG_ SECOND_FIELD_RAW11 : 23|11@0+ (1,0) [0|2047] "raw" OBSERVER
+ SG_ HOLD_STATUS_A_CANDIDATE : 32|1@1+ (1,0) [0|1] "" OBSERVER
+ SG_ HOLD_STATUS_B_CANDIDATE : 42|1@1+ (1,0) [0|1] "" OBSERVER
+
+CM_ BO_ 470 "New observation candidate: inspect on bus 0. During manual e-Pedal driving, 12000 - FIRST_WORD_RAW16 tracks the second raw11 field of 0x1CB approximately 20 ms later. This does not prove sender, receiver, physical units, or command acceptance. No unified brake request has been definitively identified.";
+CM_ BO_ 459 "Observe on bus 0; also present on bus 1. Raw field positions match older Leaf community definitions, but their physical meaning on this Leaf IC remains unverified. This is not a transmit definition.";
+
+BO_ 783 CRUISE_HOLD_STATE_CANDIDATE: 3 UNKNOWN
+ SG_ CRUISE_ENABLED : 3|1@1+ (1,0) [0|1] "" OBSERVER
+ SG_ HOLD_WAIT_RES_CANDIDATE : 4|1@1+ (1,0) [0|1] "" OBSERVER
+
+BO_ 1228 HUD_STATE_OBSERVATION: 8 UNKNOWN
+ SG_ BOTTOM_MSG : 45|3@0+ (1,0) [0|7] "" OBSERVER
+
+VAL_ 1228 BOTTOM_MSG 0 "OK_STEER_ASSIST_SETTINGS" 1 "NO_MSG" 2 "PRESS_SET_TO_SET_SPEED" 3 "PRESS_RES_SET_TO_CHANGE_SPEED" 4 "PRESS_RES_TO_RESTART" 5 "NO_MSG" 6 "CRUISE_NOT_AVAIL" 7 "NO_MSG";
+CM_ BO_ 783 "Observe on bus 2. Byte 0 bit 4 agrees with HUD BOTTOM_MSG=4 in all 15067 time-aligned comparisons across routes 59 and 5a. Candidate for held/waiting-for-RES state, not a generic wheel-speed standstill flag. Route 5c adds 96 disagreements in 20139 comparisons, including sustained differences. Treat as hold-state candidate, not a literal HUD-copy bit. Sending or using this bit as a control condition is unvalidated.";
+CM_ BO_ 1228 "Observe on bus 2. BOTTOM_MSG position and enumeration follow the upstream Nissan DBC. Included to compare the held/waiting-for-RES candidate against the stock HUD request.";
+
+BO_ 682 REQUEST_REFLECTION_CANDIDATE: 8 UNKNOWN
+ SG_ AUX_STATE_RAW5 : 8|5@1+ (1,0) [0|31] "raw" OBSERVER
+ SG_ REFLECTED_VALUE_RAW11 : 7|11@0+ (1,0) [0|2047] "raw" OBSERVER
+ SG_ REFLECTED_VALUE_POSITIVE : 21|1@1+ (1,0) [0|1] "" OBSERVER
+
+BO_ 724 LONG_ENABLE_RELATED_CANDIDATE: 6 UNKNOWN
+ SG_ LONG_ENABLE_RELATED : 7|1@1+ (1,0) [0|1] "" OBSERVER
+
+BO_ 655 LONG_ENABLE_RELATED_2_CANDIDATE: 5 UNKNOWN
+ SG_ LONG_ENABLE_RELATED_2 : 22|1@1+ (1,0) [0|1] "" OBSERVER
+
+CM_ SG_ 688 CARRY_HIGH4_CANDIDATE "Latest normal-only interpretation: 4 * (256 * CARRY_HIGH4_CANDIDATE + ALT_LOW8_FROM_INVERSE) + RAW_FRACTION2. Uses byte2 high nibble, not byte1 high nibble. Eliminates >500 steps in same-ownership adjacent normal frames across 59/5a/5c. Units and zero point remain unverified; fixed inactive and special patterns require separate classification.";
+CM_ SG_ 459 HOLD_STATUS_A_CANDIDATE "Observed on bus0 and bus1. Stable high in all seven route5c holding intervals; rises about 190-290ms after 0x30F hold candidate. Status versus command direction is unverified.";
+CM_ SG_ 459 HOLD_STATUS_B_CANDIDATE "Equals status A throughout route5c, but not throughout older routes59/5a. Preserve independently.";
+CM_ BO_ 682 "Observe on bus0 (also seen bus1). Twice REFLECTED_VALUE_RAW11 follows the raw10 0x1C3 candidate at about25ms lag across three routes. Sender, receiver, acceptance and physical units unverified. Not an independent acknowledgement.";
+CM_ SG_ 682 REFLECTED_VALUE_POSITIVE "Equals this message's own positive numeric value in all175853 frames across59/5a/5c. Do not interpret as independent acceptance confirmation.";
+CM_ BO_ 724 "Observe on bus1. Byte0bit7 closely tracks 0x2B0 active across full routes, not just RES events. Necessity for command acceptance unverified.";
+CM_ BO_ 655 "Observe on bus1. Byte2bit6 closely tracks 0x2B0 active across full routes, not just RES events. Necessity for command acceptance unverified.";
+
+CM_ SG_ 682 AUX_STATE_RAW5 "Compound observation field: low5 value10 is common in hold but not unique. Bits2/4 correlate with driver brake, bit0 with speed above roughly10kmh. Exact semantics and hysteresis unverified. Not an acceptance or hold-confirmation code.";
+
+BO_ 384 DRIVE_VALUE_OBSERVATION_CANDIDATE: 8 UNKNOWN
+ SG_ DRIVE_VALUE_SIGNED12_CANDIDATE : 23|12@0- (1,0) [-2048|2047] "raw" OBSERVER
+
+BO_ 658 ACCEL_OBSERVATION_UNCALIBRATED: 8 UNKNOWN
+ SG_ ACCEL_FIRST_WORD_RAW16 : 7|16@0+ (1,0) [0|65535] "raw" OBSERVER
+
+CM_ BO_ 384 "Observe on bus0. Candidate signed12 field from older Car-CAN community definitions. Matches the latest ordinary 0x2B0 interpretation at about160ms lag across59/5a/5c. Physical unit and sender on this exact vehicle remain unverified; do not label as confirmed torque or current.";
+CM_ BO_ 658 "Observe on bus0. Upstream opendbc calls the first word ROUGH_ACCEL with factor0.0005 offset-16.5. Added in commit bc8fa34e940a9be52e8549165a3028ad38b7de32. Independent physical calibration and ECU source on this vehicle remain unverified.";

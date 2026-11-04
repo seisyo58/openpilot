@@ -1,0 +1,100 @@
+{
+  "route": "00000068--32fe1f4a1e",
+  "attempt": "b6e62a8e162948168a96deaa04cbab8b",
+  "sha256": "1f2bb728f807eabf869d310718f6bfde5e84d807562f7fea6781c5d1a8d4ab51",
+  "sendcan": [
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "0322f18800000000",
+      "mono_ns": 131393033213577
+    },
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "3000000000000000",
+      "mono_ns": 131393075260901
+    },
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "0210010000000000",
+      "mono_ns": 131393097994869
+    },
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "0210030000000000",
+      "mono_ns": 131393123151523
+    },
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "0328000100000000",
+      "mono_ns": 131393158078032
+    },
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "0328000100000000",
+      "mono_ns": 131393188003701
+    },
+    {
+      "kind": "sendcan",
+      "bus": 0,
+      "address": "0x75d",
+      "hex": "0210010000000000",
+      "mono_ns": 131393216858263
+    }
+  ],
+  "negative_communication_replies": [
+    {
+      "kind": "can",
+      "bus": 0,
+      "address": "0x77d",
+      "hex": "037f2811cccccccc",
+      "mono_ns": 131393175274331
+    },
+    {
+      "kind": "can",
+      "bus": 0,
+      "address": "0x77d",
+      "hex": "037f2811cccccccc",
+      "mono_ns": 131393204316291
+    }
+  ],
+  "session_replies": [
+    {
+      "kind": "can",
+      "bus": 0,
+      "address": "0x77d",
+      "hex": "065001003201f4cc",
+      "mono_ns": 131393114895227
+    },
+    {
+      "kind": "can",
+      "bus": 0,
+      "address": "0x77d",
+      "hex": "065003003201f4cc",
+      "mono_ns": 131393145229129
+    },
+    {
+      "kind": "can",
+      "bus": 0,
+      "address": "0x77d",
+      "hex": "065001003201f4cc",
+      "mono_ns": 131393234561807
+    }
+  ],
+  "stop_requests": 0,
+  "enable_request_to_reply_ms": [
+    17.196299,
+    16.31259
+  ]
+}
