@@ -73,6 +73,18 @@ def button_context(frames, t0, reference, before=0.5, after=0.7):
   return result
 
 
+def control_context(frames, t0, reference):
+  if frames is None:
+    return "not_in_archive"
+  times = frames[:, 0] - t0
+  selection = (times >= reference - 0.5) & (times <= reference + 0.7)
+  result = {"status": "available", "frames_in_window": int(selection.sum())}
+  for name, column in (("cancel", 4), ("resume", 5)):
+    selected = times[selection & (frames[:, column] != 0)] - reference
+    result[name] = {"frames": len(selected), "first_offset_ms": float(selected[0] * 1000) if len(selected) else None}
+  return result
+
+
 def classify(path, tx_path=None):
   with np.load(path, allow_pickle=False) as z:
     t0 = float(z["t0"])
@@ -131,6 +143,10 @@ def classify(path, tx_path=None):
         })
     rx_buttons = load_frames(z, "b0_239")
     tx_buttons = load_frames(z, "tx_b2_239")
+    controls = np.asarray(z["car_control"]) if "car_control" in z else None
+    if controls is not None and (controls.ndim != 2 or controls.shape[1] != 9 or not np.all(np.isfinite(controls))
+                                 or np.any(np.diff(controls[:, 0]) < 0)):
+      raise ValueError("Invalid car_control: expected finite ordered nine-column stream")
     if tx_path is not None:
       with np.load(tx_path, allow_pickle=False) as tx:
         tx_buttons = load_frames(tx, "tx_b2_239")
@@ -165,7 +181,7 @@ def classify(path, tx_path=None):
           "extended_window_s": [-3.5, 0.7],
           "extended_rx_buttons": button_context(rx_buttons, t0, stop, before=3.5),
           "extended_tx_requests": button_context(tx_buttons, t0, stop, before=3.5),
-          "carControl": "not_in_archive",
+          "carControl": control_context(controls, t0, stop),
           "nearby_edges_ms": {
             "2b0_active_rise": nearby_edge(rt, active, True, stop),
             "1c3_bit2_fall": nearby_edge(t, mode, False, stop),
@@ -222,7 +238,7 @@ def main():
       "Observational labels only, not executable control states or acceptance conditions.",
       "CAN Event timestamps are batches; edge offsets are not hardware latency or causal order.",
       "TX means sendcan request, not on-wire transmission or ECU acceptance; matching RX may be passed through.",
-      "carControl is absent from these archives; absence of TX cancel does not establish pure OEM behavior.",
+      "Legacy archives omit carControl; inspect per-release availability. Absence of TX cancel does not establish pure OEM behavior.",
       "Hold flag runs are candidates; stopped_samples and contradictory signatures must be inspected.",
       "Other-context counts overlap; intervals across >30ms gaps are excluded, not interpolated.",
       "Nearest edges within +/-500ms may be unrelated; no fixed waiting-time rule is inferred.",

@@ -4,6 +4,8 @@
 
 [原ログの保存状況](DATA_RETENTION.md): 2026-11-05にユーザーがConnectで保存した5ルートと、解析時欠損・再取得の入口。保存状態はユーザー申告で、ライブ照合ではない。
 
+[進行中の調査項目](INVESTIGATION_STATUS.md)と[原rlog復旧後の最新結果](docs/leaf_raw_recovery_20261105.md)を参照。取得・解析元66区間の照合と5aの欠損解消は後続で実施済み。
+
 ## 調査履歴に対するレビュー
 
 - [2026-11-05: Codexの見解と次のアプローチ](docs/leaf_longitudinal_review_20261105.md) — 既存の観測・仮説・提案を区別したレビュー。新たな実車試験結果ではない。
@@ -82,6 +84,7 @@
 
 ## 採録した監査・照合データ
 
+- [leaf_raw_recovery_20261105.json](evidence/leaf_raw_recovery_20261105.json) — 原rlog66区間のハッシュ・再抽出・欠損解消後の分類・carControl・設定情報。旧NPZの欠損を含む結果より優先。
 - [leaf_transport_visibility_20261105.json](evidence/leaf_transport_visibility_20261105.json) — [audit_transport.py](audit_transport.py)で元NPZを再集計したバス別受信数・観測範囲・SHA256。
 - [leaf_event_classification_20261105.json](evidence/leaf_event_classification_20261105.json) — [classify_events.py](classify_events.py)で元NPZを再集計した観測分類・区間一覧・解除履歴。
 - [leaf_boundary_audit_20261105.json](evidence/leaf_boundary_audit_20261105.json) — [audit_boundaries.py](audit_boundaries.py)による特別パターンの境界・近傍エッジ全候補・観測時刻区間の比較。

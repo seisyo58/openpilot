@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 
-from openpilot.tools.leaf_research.classify_events import button_context, classify, decode_2b0, labels_for, previous, true_runs
+from openpilot.tools.leaf_research.classify_events import button_context, classify, control_context, decode_2b0, labels_for, previous, true_runs
 
 
 class TestEventClassifier(unittest.TestCase):
@@ -40,6 +40,14 @@ class TestEventClassifier(unittest.TestCase):
     frames = np.array([[9.12, 0, 0, 0, 16, 0, 0, 0, 0]], dtype=float)
     self.assertEqual(button_context(frames, 0, 10)["res"]["frames"], 0)
     self.assertEqual(button_context(frames, 0, 10, before=3.5)["res"]["frames"], 1)
+
+  def test_car_control_cancel_is_distinct_from_resume(self):
+    frames = np.array([[9.9, 1, 1, 0, 1, 0, 0, 0, 0], [10., 1, 1, 0, 0, 1, 0, 0, 0]])
+    result = control_context(frames, 0, 10)
+    self.assertEqual(result["cancel"]["frames"], 1)
+    self.assertAlmostEqual(result["cancel"]["first_offset_ms"], -100)
+    self.assertEqual(result["resume"]["frames"], 1)
+    self.assertEqual(control_context(None, 0, 10), "not_in_archive")
 
   def test_censored_hold_does_not_create_a_release(self):
     with tempfile.TemporaryDirectory() as directory:
