@@ -25,6 +25,7 @@
 - `dbc/leaf_longitudinal_candidates.dbc`: Cabanaなどで使う独立した観測用DBC。候補・旧解釈もコメント付きで残る。車両用DBCへの置換・送信用定義ではない。
 - `monitor.py`: 既存の受信専用モニター。通常のopenpilotと別プロセスで明示起動する。公開・送信・Params変更の機能はない。
 - `audit_transport.py`: 元の受信抽出NPZをローカルで集計する。車両接続なし。形式・使い方・結果は[3経路の接続調査](docs/leaf_transport_paths_20261105.md)を参照。
+- `classify_events.py`: 元NPZの受信フィールドを通常要求・協調制動・保持候補に分類し、解除付近のボタン送信要求も併記する。使い方と限界は[観測分類](docs/leaf_event_classification_20261105.md)を参照。
 - `evidence/`: 主要な監査結果とDBC照合結果。元のrlog・個人の走行ログは含めない。
 - `provenance.json`: 元ファイル、コピー先、SHA256、基点と実験ブランチの版。
 
