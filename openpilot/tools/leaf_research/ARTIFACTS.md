@@ -2,6 +2,10 @@
 
 知識の入口は[引き継ぎ文書](HANDOFF.md)。以下はこのブランチに実際に含まれる資料の索引。
 
+## 調査履歴に対するレビュー
+
+- [2026-11-05: Codexの見解と次のアプローチ](docs/leaf_longitudinal_review_20261105.md) — 既存の観測・仮説・提案を区別したレビュー。新たな実車試験結果ではない。
+
 ## 実機試験結果
 
 - [leaf_bus1_identity_attempt_001](docs/leaf_bus1_identity_attempt_001.md)
