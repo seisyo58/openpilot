@@ -1,0 +1,106 @@
+{
+  "schema": 1,
+  "input_sha256": "f68557cc86c37aee1f05042a348b890317c30c8b909ccd0d98d5ad32f0e6a207",
+  "metadata_sha256": "31a8967c60444fa457b2e68e7a5a560590476eb1c5eca864a155559cbaedaa4b",
+  "ev_candidate_rx_counts": {
+    "1d4": 0,
+    "1d5": 0,
+    "1da": 0,
+    "1db": 0,
+    "1dc": 0,
+    "55b": 0,
+    "5bc": 0,
+    "5c0": 0
+  },
+  "model": {
+    "lag_s": 0.16,
+    "slope": -0.19905726326136464,
+    "intercept": 2067.124863628184,
+    "origin": "existing leaf_drive_mapping_holdout.json; fitted on first half of selected route5c only"
+  },
+  "recovered_segments": [
+    {
+      "segment": 5,
+      "locked_model": {
+        "samples": 209,
+        "rmse_raw": 2.2380483591188325,
+        "bias_raw": 0.059730811719138174,
+        "absolute_error_p95_raw": 5.0039281387219035
+      },
+      "current_180_persistence": {
+        "samples": 209,
+        "rmse_raw": 9.816498172140427,
+        "bias_raw": 0.7272727272727273,
+        "absolute_error_p95_raw": 18.0
+      }
+    },
+    {
+      "segment": 7,
+      "locked_model": {
+        "samples": 717,
+        "rmse_raw": 0.7738345366887639,
+        "bias_raw": 0.11631915429858325,
+        "absolute_error_p95_raw": 1.4643040286232463
+      },
+      "current_180_persistence": {
+        "samples": 717,
+        "rmse_raw": 2.6997597909573905,
+        "bias_raw": -0.708507670850767,
+        "absolute_error_p95_raw": 6.0
+      }
+    },
+    {
+      "segment": 8,
+      "locked_model": {
+        "samples": 1149,
+        "rmse_raw": 0.8018202868505452,
+        "bias_raw": 0.07097949522119655,
+        "absolute_error_p95_raw": 1.5447422454127713
+      },
+      "current_180_persistence": {
+        "samples": 1149,
+        "rmse_raw": 2.687203340438412,
+        "bias_raw": 0.15056570931244562,
+        "absolute_error_p95_raw": 5.0
+      }
+    },
+    {
+      "segment": 11,
+      "locked_model": {
+        "samples": 97,
+        "rmse_raw": 1.094425475127019,
+        "bias_raw": 0.5933849437719707,
+        "absolute_error_p95_raw": 2.199381436500695
+      },
+      "current_180_persistence": {
+        "samples": 97,
+        "rmse_raw": 2.635991959063499,
+        "bias_raw": 1.2164948453608246,
+        "absolute_error_p95_raw": 5.0
+      }
+    }
+  ],
+  "combined_locked_model": {
+    "samples": 2172,
+    "rmse_raw": 1.0359778723444677,
+    "bias_raw": 0.10819445342376614,
+    "absolute_error_p95_raw": 1.8783872604348713
+  },
+  "combined_current_180_persistence": {
+    "samples": 2172,
+    "rmse_raw": 3.9760447507588284,
+    "bias_raw": -0.02992633517495396,
+    "absolute_error_p95_raw": 8.0
+  },
+  "q_range": [
+    9244.0,
+    10698.0
+  ],
+  "selection": "Every fifth carState; speed>3m/s, ACC on, no pedal, normal active 2B0/0xAC, quiet 1C3; previous-only joins<=30ms; bad contexts +/-1.2s; all button presses -1/+5s; segment guards 1.2s",
+  "limitations": [
+    "No coefficient, delay or threshold was refit on recovered samples; selection rules are retrospective.",
+    "Adjacent samples are correlated and are not independent trials; report segments separately.",
+    "180 is not an independently calibrated motor or energy sensor; a good fit can be a reflected request.",
+    "This does not identify a causal command, physical units, stock takeover or ECU acceptance."
+  ]
+}
