@@ -5,6 +5,7 @@
 ## 調査履歴に対するレビュー
 
 - [2026-11-05: Codexの見解と次のアプローチ](docs/leaf_longitudinal_review_20261105.md) — 既存の観測・仮説・提案を区別したレビュー。新たな実車試験結果ではない。
+- [2026-11-05: 3経路の接続関係と1D6の再集計](docs/leaf_transport_paths_20261105.md) — 受信抽出NPZを3走行で再監査。1D6のbus0/1継続とbus2起動直後の記録を整理。
 
 ## 実機試験結果
 
@@ -77,6 +78,7 @@
 
 ## 採録した監査・照合データ
 
+- [leaf_transport_visibility_20261105.json](evidence/leaf_transport_visibility_20261105.json) — [audit_transport.py](audit_transport.py)で元NPZを再集計したバス別受信数・観測範囲・SHA256。
 - [leaf_2aa_state_dbc_checks.json](evidence/leaf_2aa_state_dbc_checks.json)
 - [leaf_bounded_gyro_check.json](evidence/leaf_bounded_gyro_check.json)
 - [leaf_bus1_identity_attempt_001_rlog_audit.json](evidence/leaf_bus1_identity_attempt_001_rlog_audit.json)
