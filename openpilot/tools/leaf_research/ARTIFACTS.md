@@ -84,6 +84,7 @@
 
 ## 採録した監査・照合データ
 
+- [leaf_public_source_audit_20261105.json](evidence/leaf_public_source_audit_20261105.json) / [leaf_firmware_inventory_20261105.json](evidence/leaf_firmware_inventory_20261105.json) — [公開一次資料と記録FWの追加照合](docs/leaf_public_sources_20261105.md)。[audit_firmware_inventory.py](audit_firmware_inventory.py)で記録FWを再現。
 - [leaf_recovered_holdout_20261105.json](evidence/leaf_recovered_holdout_20261105.json) — [復旧未使用区間での固定評価と要求/応答の限界](docs/leaf_response_limits_20261105.md)。[check_recovered_holdout.py](check_recovered_holdout.py)で再現。
 - [leaf_raw_signals_20261105.json](evidence/leaf_raw_signals_20261105.json) — [復旧後の符号化・カウンター・returned監査](docs/leaf_raw_signals_20261105.md)。[audit_raw_signals.py](audit_raw_signals.py)で再現。
 - [leaf_raw_recovery_20261105.json](evidence/leaf_raw_recovery_20261105.json) — 原rlog66区間のハッシュ・再抽出・欠損解消後の分類・carControl・設定情報。旧NPZの欠損を含む結果より優先。

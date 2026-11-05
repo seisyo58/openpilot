@@ -30,6 +30,7 @@
 - `fetch_saved_logs.py` / `extract_saved_logs.py` / `reaudit_saved_routes.py`: 保存ルートの原rlog取得、限定ストリームの抽出、旧解析との照合。[原rlog復旧](docs/leaf_raw_recovery_20261105.md)を参照。取得先は明示し、原ログをGitへ追加しない。
 - `audit_raw_signals.py`: 復旧後の符号化・カウンターと、通常RX/returned/sendcanの区別を照合。[監査結果](docs/leaf_raw_signals_20261105.md)を参照。
 - `check_recovered_holdout.py`: 既存のq→180モデルを再調整せず、以前欠損していた5aの4区間で評価する。[結果と識別の限界](docs/leaf_response_limits_20261105.md)を参照。
+- `audit_firmware_inventory.py`: 原rlogに記録されたFW在庫を、経路・OBD多重化・ハッシュで照合する。[公開根拠との照合](docs/leaf_public_sources_20261105.md)を参照。診断送信・VIN抽出はしない。
 - `evidence/`: 主要な監査結果とDBC照合結果。元のrlog・個人の走行ログは含めない。
 - `provenance.json`: 元ファイル、コピー先、SHA256、基点と実験ブランチの版。
 

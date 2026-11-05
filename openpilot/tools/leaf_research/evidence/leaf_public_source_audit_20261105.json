@@ -1,0 +1,100 @@
+{
+  "checked_date": "2026-11-05",
+  "implementations": [
+    {
+      "repo": "StarPilotHQ/StarPilot",
+      "last_change": "cfd221b89cec223397f0a805791136aa9b958758",
+      "date": "2026-08-23T15:40:20Z",
+      "sha256": "a03378ee0227262032d47911b319080c2a2b36968e7dee72ec30e8ba16099a1d",
+      "url": "https://github.com/StarPilotHQ/StarPilot/blob/cfd221b89cec223397f0a805791136aa9b958758/opendbc_repo/opendbc/car/nissan/interface.py",
+      "relevant_lines": [
+        "LEAF_ADAS_ECU_ADDR = 0x707",
+        "LEAF_ADAS_ECU_BUS = 0",
+        "LEAF_ADAS_COMMAND_BUS = 1",
+        "LEAF_2025_SV_PLUS_ALPHA_LONG_ENABLED = False",
+        "LEAF_KWP_DISABLE_NORMAL_TX_NO_RESPONSE = b\"\\x28\\x02\"",
+        "    ret.alphaLongitudinalAvailable = is_leaf_2025_sv_plus_longitudinal(candidate, car_fw)"
+      ]
+    },
+    {
+      "repo": "nkaoud-sp/openpilot-stp",
+      "last_change": "56d6a6ee479f7599e4aa58e1af825a241d3b8f24",
+      "date": "2026-08-21T19:19:34Z",
+      "sha256": "ad0782b39dd6b220fc7f7ad4ec3fc24e866a8ce2e39f7c9ed5d015ef9cdcbb9c",
+      "url": "https://github.com/nkaoud-sp/openpilot-stp/blob/56d6a6ee479f7599e4aa58e1af825a241d3b8f24/opendbc_repo/opendbc/car/nissan/interface.py",
+      "relevant_lines": [
+        "LEAF_ADAS_ECU_ADDR = 0x707",
+        "LEAF_ADAS_ECU_BUS = 0",
+        "LEAF_ADAS_COMMAND_BUS = 1",
+        "LEAF_KWP_DISABLE_NORMAL_TX_NO_RESPONSE = b\"\\x28\\x02\"",
+        "    ret.alphaLongitudinalAvailable = is_leaf_2025_sv_plus_longitudinal(candidate, car_fw)"
+      ]
+    }
+  ],
+  "older_implementation_commit_also_exists_in_StarPilot": "56d6a6ee479f7599e4aa58e1af825a241d3b8f24",
+  "scope": "Current indexed public implementations and exact identifier searches; no vehicle tests, purchases or messages.",
+  "search_audit": [
+    {
+      "query": "284E76WK2E; 284E7-6WK2E",
+      "finding": "Used-part catalogues found; no matching primary CAN/CommunicationControl specification found in the inspected results."
+    },
+    {
+      "query": "Nissan CommunicationControl 75D; Nissan Leaf 1C3 2B0; exact identifiers on GitHub",
+      "finding": "No new same-ECU 75D stop/recovery success source found. Indexed code is not an exhaustive inventory."
+    },
+    {
+      "query": "site:nissan-techinfo.com LEAF CAN; site:nissan.co.jp ZE1 CAN ADAS",
+      "finding": "Service-information portal/general material found; no matching Japanese June-2022 numerical CAN sender/receiver table obtained."
+    },
+    {
+      "query": "Indexed NICS service catalogue and ZE1 follow-up",
+      "finding": "Public indexed C27 catalogue lists older publications; not the matching ZE1 manual. Portal root returned HTTP403; no restricted access attempted."
+    }
+  ],
+  "owner_manual": {
+    "url": "https://www.nissan.co.jp/SP/OM/LEAF/2206/manual_t00um5sa7a.pdf",
+    "sha256": "83f0d1ef382893600fb51f420f7db33105a5382eb149d0e601c36145d59226e9",
+    "printed_page": 199,
+    "pdf_zero_based_page": 199,
+    "inspection": "Full page rendered and visually inspected. Assist functions have priority over e-Pedal. This does not identify a CAN command."
+  },
+  "required_fw_prefix_in_public_implementation": "6WK2CDB",
+  "recorded_self_camera_prefix": "6WK6ADB",
+  "ev_candidate_rx_counts": {
+    "00000059--02589b1b20": {
+      "1d4": 0,
+      "1d5": 0,
+      "1da": 0,
+      "1db": 0,
+      "1dc": 0,
+      "55b": 0,
+      "5bc": 0,
+      "5c0": 0
+    },
+    "0000005a--34bc682d3e": {
+      "1d4": 0,
+      "1d5": 0,
+      "1da": 0,
+      "1db": 0,
+      "1dc": 0,
+      "55b": 0,
+      "5bc": 0,
+      "5c0": 0
+    },
+    "0000005c--6a84234ad4": {
+      "1d4": 0,
+      "1d5": 0,
+      "1da": 0,
+      "1db": 0,
+      "1dc": 0,
+      "55b": 0,
+      "5bc": 0,
+      "5c0": 0
+    }
+  },
+  "limitations": [
+    "Search absence does not establish impossibility or absence of private/unindexed material.",
+    "Used-part labels are not adopted as CAN sender or diagnostic specification.",
+    "No contact, purchase, account creation, restricted access or vehicle command was performed."
+  ]
+}

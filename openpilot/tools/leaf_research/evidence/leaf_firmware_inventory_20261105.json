@@ -1,0 +1,405 @@
+{
+  "schema": 1,
+  "archives": [
+    {
+      "route": "00000059--02589b1b20",
+      "segment": "0",
+      "raw_sha256": "cc63ebe849df3057b381cc748ce1fa4ea49f67f0eac7ab2fb986eeb66461ee8f",
+      "records": [
+        {
+          "software_ecu_label": "eps",
+          "address": "0x742",
+          "bus": 0,
+          "obdMultiplexing": false,
+          "request": [
+            "1081",
+            "2183"
+          ],
+          "fw_bytes": 24,
+          "fw_sha256": "79f1ea6d139b4189ad3c0695eb75e76e0204d7e57b13b33a79aa1f3e62c37f0d",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "fwdCamera",
+          "address": "0x707",
+          "bus": 0,
+          "obdMultiplexing": false,
+          "request": [
+            "1081",
+            "2183"
+          ],
+          "fw_bytes": 24,
+          "fw_sha256": "7089a30faf32bf6f9ba40475d3188d5c6a4b79fd199982db33ca0d2e3352c4d3",
+          "camera_prefix": "6WK6ADB"
+        },
+        {
+          "software_ecu_label": "gateway",
+          "address": "0x18dad0f1",
+          "bus": 0,
+          "obdMultiplexing": false,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "709cdf8810fb3fd2e3f2ec42d85b0c1fddc365efd05f92c435433dc8e704cf81",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "abs",
+          "address": "0x740",
+          "bus": 0,
+          "obdMultiplexing": false,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "1e31ab22d9c74324ee774bdae80ee4324e3d6e10934938d7b755e4ea33adf981",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "gateway",
+          "address": "0x18dad0f1",
+          "bus": 0,
+          "obdMultiplexing": false,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "709cdf8810fb3fd2e3f2ec42d85b0c1fddc365efd05f92c435433dc8e704cf81",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "eps",
+          "address": "0x742",
+          "bus": 1,
+          "obdMultiplexing": true,
+          "request": [
+            "1081",
+            "2183"
+          ],
+          "fw_bytes": 24,
+          "fw_sha256": "79f1ea6d139b4189ad3c0695eb75e76e0204d7e57b13b33a79aa1f3e62c37f0d",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "fwdCamera",
+          "address": "0x707",
+          "bus": 1,
+          "obdMultiplexing": true,
+          "request": [
+            "1081",
+            "2183"
+          ],
+          "fw_bytes": 24,
+          "fw_sha256": "7089a30faf32bf6f9ba40475d3188d5c6a4b79fd199982db33ca0d2e3352c4d3",
+          "camera_prefix": "6WK6ADB"
+        },
+        {
+          "software_ecu_label": "gateway",
+          "address": "0x18dad0f1",
+          "bus": 1,
+          "obdMultiplexing": true,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "709cdf8810fb3fd2e3f2ec42d85b0c1fddc365efd05f92c435433dc8e704cf81",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "abs",
+          "address": "0x740",
+          "bus": 1,
+          "obdMultiplexing": true,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "1e31ab22d9c74324ee774bdae80ee4324e3d6e10934938d7b755e4ea33adf981",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "gateway",
+          "address": "0x18dad0f1",
+          "bus": 1,
+          "obdMultiplexing": true,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "709cdf8810fb3fd2e3f2ec42d85b0c1fddc365efd05f92c435433dc8e704cf81",
+          "camera_prefix": null
+        }
+      ]
+    },
+    {
+      "route": "0000005a--34bc682d3e",
+      "segment": "0",
+      "raw_sha256": "8e9a06f0531af7a11f24e099ada344b4d396ef8680f8456b0f61393919454547",
+      "records": [
+        {
+          "software_ecu_label": "fwdCamera",
+          "address": "0x707",
+          "bus": 0,
+          "obdMultiplexing": false,
+          "request": [
+            "1081",
+            "2183"
+          ],
+          "fw_bytes": 24,
+          "fw_sha256": "7089a30faf32bf6f9ba40475d3188d5c6a4b79fd199982db33ca0d2e3352c4d3",
+          "camera_prefix": "6WK6ADB"
+        },
+        {
+          "software_ecu_label": "eps",
+          "address": "0x742",
+          "bus": 0,
+          "obdMultiplexing": false,
+          "request": [
+            "1081",
+            "2183"
+          ],
+          "fw_bytes": 24,
+          "fw_sha256": "79f1ea6d139b4189ad3c0695eb75e76e0204d7e57b13b33a79aa1f3e62c37f0d",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "gateway",
+          "address": "0x18dad0f1",
+          "bus": 0,
+          "obdMultiplexing": false,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "709cdf8810fb3fd2e3f2ec42d85b0c1fddc365efd05f92c435433dc8e704cf81",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "abs",
+          "address": "0x740",
+          "bus": 0,
+          "obdMultiplexing": false,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "1e31ab22d9c74324ee774bdae80ee4324e3d6e10934938d7b755e4ea33adf981",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "gateway",
+          "address": "0x18dad0f1",
+          "bus": 0,
+          "obdMultiplexing": false,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "709cdf8810fb3fd2e3f2ec42d85b0c1fddc365efd05f92c435433dc8e704cf81",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "fwdCamera",
+          "address": "0x707",
+          "bus": 1,
+          "obdMultiplexing": true,
+          "request": [
+            "1081",
+            "2183"
+          ],
+          "fw_bytes": 24,
+          "fw_sha256": "7089a30faf32bf6f9ba40475d3188d5c6a4b79fd199982db33ca0d2e3352c4d3",
+          "camera_prefix": "6WK6ADB"
+        },
+        {
+          "software_ecu_label": "eps",
+          "address": "0x742",
+          "bus": 1,
+          "obdMultiplexing": true,
+          "request": [
+            "1081",
+            "2183"
+          ],
+          "fw_bytes": 24,
+          "fw_sha256": "79f1ea6d139b4189ad3c0695eb75e76e0204d7e57b13b33a79aa1f3e62c37f0d",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "gateway",
+          "address": "0x18dad0f1",
+          "bus": 1,
+          "obdMultiplexing": true,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "709cdf8810fb3fd2e3f2ec42d85b0c1fddc365efd05f92c435433dc8e704cf81",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "abs",
+          "address": "0x740",
+          "bus": 1,
+          "obdMultiplexing": true,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "1e31ab22d9c74324ee774bdae80ee4324e3d6e10934938d7b755e4ea33adf981",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "gateway",
+          "address": "0x18dad0f1",
+          "bus": 1,
+          "obdMultiplexing": true,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "709cdf8810fb3fd2e3f2ec42d85b0c1fddc365efd05f92c435433dc8e704cf81",
+          "camera_prefix": null
+        }
+      ]
+    },
+    {
+      "route": "0000005c--6a84234ad4",
+      "segment": "0",
+      "raw_sha256": "9a6fe7c65fd4a95db8915a2f66f6b93db8857844cfedb061c569d7d233abd35b",
+      "records": [
+        {
+          "software_ecu_label": "eps",
+          "address": "0x742",
+          "bus": 0,
+          "obdMultiplexing": false,
+          "request": [
+            "1081",
+            "2183"
+          ],
+          "fw_bytes": 24,
+          "fw_sha256": "79f1ea6d139b4189ad3c0695eb75e76e0204d7e57b13b33a79aa1f3e62c37f0d",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "fwdCamera",
+          "address": "0x707",
+          "bus": 0,
+          "obdMultiplexing": false,
+          "request": [
+            "1081",
+            "2183"
+          ],
+          "fw_bytes": 24,
+          "fw_sha256": "7089a30faf32bf6f9ba40475d3188d5c6a4b79fd199982db33ca0d2e3352c4d3",
+          "camera_prefix": "6WK6ADB"
+        },
+        {
+          "software_ecu_label": "gateway",
+          "address": "0x18dad0f1",
+          "bus": 0,
+          "obdMultiplexing": false,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "709cdf8810fb3fd2e3f2ec42d85b0c1fddc365efd05f92c435433dc8e704cf81",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "abs",
+          "address": "0x740",
+          "bus": 0,
+          "obdMultiplexing": false,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "1e31ab22d9c74324ee774bdae80ee4324e3d6e10934938d7b755e4ea33adf981",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "gateway",
+          "address": "0x18dad0f1",
+          "bus": 0,
+          "obdMultiplexing": false,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "709cdf8810fb3fd2e3f2ec42d85b0c1fddc365efd05f92c435433dc8e704cf81",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "eps",
+          "address": "0x742",
+          "bus": 1,
+          "obdMultiplexing": true,
+          "request": [
+            "1081",
+            "2183"
+          ],
+          "fw_bytes": 24,
+          "fw_sha256": "79f1ea6d139b4189ad3c0695eb75e76e0204d7e57b13b33a79aa1f3e62c37f0d",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "fwdCamera",
+          "address": "0x707",
+          "bus": 1,
+          "obdMultiplexing": true,
+          "request": [
+            "1081",
+            "2183"
+          ],
+          "fw_bytes": 24,
+          "fw_sha256": "7089a30faf32bf6f9ba40475d3188d5c6a4b79fd199982db33ca0d2e3352c4d3",
+          "camera_prefix": "6WK6ADB"
+        },
+        {
+          "software_ecu_label": "gateway",
+          "address": "0x18dad0f1",
+          "bus": 1,
+          "obdMultiplexing": true,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "709cdf8810fb3fd2e3f2ec42d85b0c1fddc365efd05f92c435433dc8e704cf81",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "abs",
+          "address": "0x740",
+          "bus": 1,
+          "obdMultiplexing": true,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "1e31ab22d9c74324ee774bdae80ee4324e3d6e10934938d7b755e4ea33adf981",
+          "camera_prefix": null
+        },
+        {
+          "software_ecu_label": "gateway",
+          "address": "0x18dad0f1",
+          "bus": 1,
+          "obdMultiplexing": true,
+          "request": [
+            "22f188"
+          ],
+          "fw_bytes": 10,
+          "fw_sha256": "709cdf8810fb3fd2e3f2ec42d85b0c1fddc365efd05f92c435433dc8e704cf81",
+          "camera_prefix": null
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "carFw is a recorded software inventory, possibly cached; it is not an exhaustive fresh physical ECU census.",
+    "ECU labels are software classifications, not manufacturer-confirmed source mappings for ordinary CAN IDs.",
+    "bus1 with obdMultiplexing=true is not interchangeable with a native bus1 diagnostic attempt without multiplexing.",
+    "Duplicate addresses/versions and multiple buses do not prove multiple physical ECUs.",
+    "Firmware bytes are hashed; VIN, credentials and location are not exported."
+  ]
+}
