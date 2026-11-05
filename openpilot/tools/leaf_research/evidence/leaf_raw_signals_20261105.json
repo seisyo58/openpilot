@@ -1,0 +1,361 @@
+{
+  "schema": 1,
+  "archives": [
+    {
+      "input": "00000059--02589b1b20.npz",
+      "sha256": "e448348cc67dd02084807f9e72b011822ecf41a86cdf552397d6241ad9de3e57",
+      "1c3": {
+        "checksum_mismatches": 0,
+        "bit7_positive_mismatches": 0,
+        "raw10_range": [
+          0,
+          829
+        ],
+        "frames": 86888,
+        "counter": {
+          "adjacent_steps_with_gap_at_most_30ms": 86885,
+          "longer_gaps_excluded": 2,
+          "delta_histogram": {
+            "1": 86885
+          },
+          "nonunit_step_examples": []
+        }
+      },
+      "2b0": {
+        "inverse_mismatches": 0,
+        "fraction_mismatches": 0,
+        "frames": 86888,
+        "counter": {
+          "adjacent_steps_with_gap_at_most_30ms": 86885,
+          "longer_gaps_excluded": 2,
+          "delta_histogram": {
+            "1": 86885
+          },
+          "nonunit_step_examples": []
+        }
+      },
+      "visibility": {
+        "1d6": {
+          "b0_1d6": {
+            "all_frames": 87054,
+            "after_30s": 84061
+          },
+          "b1_1d6": {
+            "all_frames": 86894,
+            "after_30s": 84050
+          },
+          "b2_1d6": {
+            "all_frames": 918,
+            "after_30s": 0
+          },
+          "b130_1d6": {
+            "all_frames": 86128,
+            "after_30s": 84050
+          },
+          "host_sendcan_frames": 0
+        },
+        "180": {
+          "b0_180": {
+            "all_frames": 87054,
+            "after_30s": 84061
+          },
+          "b1_180": {
+            "all_frames": 86894,
+            "after_30s": 84050
+          },
+          "b2_180": {
+            "all_frames": 918,
+            "after_30s": 0
+          },
+          "b130_180": {
+            "all_frames": 86129,
+            "after_30s": 84051
+          },
+          "host_sendcan_frames": 0
+        },
+        "1cb": {
+          "b0_1cb": {
+            "all_frames": 87091,
+            "after_30s": 84097
+          },
+          "b1_1cb": {
+            "all_frames": 86939,
+            "after_30s": 84095
+          },
+          "b2_1cb": {
+            "all_frames": 919,
+            "after_30s": 0
+          },
+          "b130_1cb": {
+            "all_frames": 86174,
+            "after_30s": 84095
+          },
+          "host_sendcan_frames": 0
+        },
+        "1c3": {
+          "b1_1c3": {
+            "all_frames": 86888,
+            "after_30s": 84043
+          },
+          "host_sendcan_frames": 0
+        },
+        "2b0": {
+          "b1_2b0": {
+            "all_frames": 86888,
+            "after_30s": 84043
+          },
+          "host_sendcan_frames": 0
+        }
+      }
+    },
+    {
+      "input": "0000005a--34bc682d3e.npz",
+      "sha256": "f68557cc86c37aee1f05042a348b890317c30c8b909ccd0d98d5ad32f0e6a207",
+      "1c3": {
+        "checksum_mismatches": 0,
+        "bit7_positive_mismatches": 0,
+        "raw10_range": [
+          0,
+          763
+        ],
+        "frames": 87320,
+        "counter": {
+          "adjacent_steps_with_gap_at_most_30ms": 87315,
+          "longer_gaps_excluded": 4,
+          "delta_histogram": {
+            "1": 87314,
+            "2": 1
+          },
+          "nonunit_step_examples": [
+            {
+              "time_s": 8.492202825000277,
+              "interval_ms": 19.66075299969816,
+              "delta": 2
+            }
+          ]
+        }
+      },
+      "2b0": {
+        "inverse_mismatches": 0,
+        "fraction_mismatches": 0,
+        "frames": 87319,
+        "counter": {
+          "adjacent_steps_with_gap_at_most_30ms": 87316,
+          "longer_gaps_excluded": 2,
+          "delta_histogram": {
+            "1": 87315,
+            "2": 1
+          },
+          "nonunit_step_examples": [
+            {
+              "time_s": 8.492202825000277,
+              "interval_ms": 19.66075299969816,
+              "delta": 2
+            }
+          ]
+        }
+      },
+      "visibility": {
+        "1d6": {
+          "b0_1d6": {
+            "all_frames": 87483,
+            "after_30s": 84491
+          },
+          "b1_1d6": {
+            "all_frames": 87327,
+            "after_30s": 84486
+          },
+          "b2_1d6": {
+            "all_frames": 846,
+            "after_30s": 0
+          },
+          "b130_1d6": {
+            "all_frames": 86636,
+            "after_30s": 84486
+          },
+          "host_sendcan_frames": 0
+        },
+        "180": {
+          "b0_180": {
+            "all_frames": 87484,
+            "after_30s": 84490
+          },
+          "b1_180": {
+            "all_frames": 87328,
+            "after_30s": 84486
+          },
+          "b2_180": {
+            "all_frames": 847,
+            "after_30s": 0
+          },
+          "b130_180": {
+            "all_frames": 86636,
+            "after_30s": 84485
+          },
+          "host_sendcan_frames": 0
+        },
+        "1cb": {
+          "b0_1cb": {
+            "all_frames": 87528,
+            "after_30s": 84533
+          },
+          "b1_1cb": {
+            "all_frames": 87374,
+            "after_30s": 84531
+          },
+          "b2_1cb": {
+            "all_frames": 848,
+            "after_30s": 0
+          },
+          "b130_1cb": {
+            "all_frames": 86682,
+            "after_30s": 84531
+          },
+          "host_sendcan_frames": 0
+        },
+        "1c3": {
+          "b1_1c3": {
+            "all_frames": 87320,
+            "after_30s": 84478
+          },
+          "host_sendcan_frames": 0
+        },
+        "2b0": {
+          "b1_2b0": {
+            "all_frames": 87319,
+            "after_30s": 84478
+          },
+          "host_sendcan_frames": 0
+        }
+      }
+    },
+    {
+      "input": "0000005c--6a84234ad4.npz",
+      "sha256": "3a7a3d95b0677df443d73ce356fdfebf399a2afed92051bec225be7005eb7a75",
+      "1c3": {
+        "checksum_mismatches": 0,
+        "bit7_positive_mismatches": 0,
+        "raw10_range": [
+          0,
+          781
+        ],
+        "frames": 200812,
+        "counter": {
+          "adjacent_steps_with_gap_at_most_30ms": 200809,
+          "longer_gaps_excluded": 2,
+          "delta_histogram": {
+            "1": 200808,
+            "2": 1
+          },
+          "nonunit_step_examples": [
+            {
+              "time_s": 7.13278767300001,
+              "interval_ms": 9.555564000010008,
+              "delta": 2
+            }
+          ]
+        }
+      },
+      "2b0": {
+        "inverse_mismatches": 0,
+        "fraction_mismatches": 0,
+        "frames": 200812,
+        "counter": {
+          "adjacent_steps_with_gap_at_most_30ms": 200809,
+          "longer_gaps_excluded": 2,
+          "delta_histogram": {
+            "1": 200808,
+            "2": 1
+          },
+          "nonunit_step_examples": [
+            {
+              "time_s": 7.13278767300001,
+              "interval_ms": 9.555564000010008,
+              "delta": 2
+            }
+          ]
+        }
+      },
+      "visibility": {
+        "1d6": {
+          "b0_1d6": {
+            "all_frames": 200995,
+            "after_30s": 198004
+          },
+          "b1_1d6": {
+            "all_frames": 200831,
+            "after_30s": 197997
+          },
+          "b2_1d6": {
+            "all_frames": 708,
+            "after_30s": 0
+          },
+          "b130_1d6": {
+            "all_frames": 200284,
+            "after_30s": 197997
+          },
+          "host_sendcan_frames": 0
+        },
+        "180": {
+          "b0_180": {
+            "all_frames": 200997,
+            "after_30s": 198004
+          },
+          "b1_180": {
+            "all_frames": 200831,
+            "after_30s": 197997
+          },
+          "b2_180": {
+            "all_frames": 710,
+            "after_30s": 0
+          },
+          "b130_180": {
+            "all_frames": 200284,
+            "after_30s": 197997
+          },
+          "host_sendcan_frames": 0
+        },
+        "1cb": {
+          "b0_1cb": {
+            "all_frames": 201098,
+            "after_30s": 198106
+          },
+          "b1_1cb": {
+            "all_frames": 200939,
+            "after_30s": 198103
+          },
+          "b2_1cb": {
+            "all_frames": 708,
+            "after_30s": 0
+          },
+          "b130_1cb": {
+            "all_frames": 200391,
+            "after_30s": 198103
+          },
+          "host_sendcan_frames": 0
+        },
+        "1c3": {
+          "b1_1c3": {
+            "all_frames": 200812,
+            "after_30s": 197978
+          },
+          "host_sendcan_frames": 0
+        },
+        "2b0": {
+          "b1_2b0": {
+            "all_frames": 200812,
+            "after_30s": 197978
+          },
+          "host_sendcan_frames": 0
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Candidate redundancy/checksum conformity is not a calibrated physical meaning or acceptance test.",
+    "Counter deltas may reflect missing logs, reception loss or batching; do not equate them to ECU faults.",
+    "src128/129/130 are returned records, not ordinary RX or receiver acceptance.",
+    "The inspected fdcan driver emits returned when handing a TX frame to hardware, not confirmed application acceptance.",
+    "Absent extracted keys are not synthesized as observed zero counts; selected-ID extraction must be checked."
+  ]
+}

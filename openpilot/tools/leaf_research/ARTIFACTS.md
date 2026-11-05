@@ -84,6 +84,7 @@
 
 ## 採録した監査・照合データ
 
+- [leaf_raw_signals_20261105.json](evidence/leaf_raw_signals_20261105.json) — [復旧後の符号化・カウンター・returned監査](docs/leaf_raw_signals_20261105.md)。[audit_raw_signals.py](audit_raw_signals.py)で再現。
 - [leaf_raw_recovery_20261105.json](evidence/leaf_raw_recovery_20261105.json) — 原rlog66区間のハッシュ・再抽出・欠損解消後の分類・carControl・設定情報。旧NPZの欠損を含む結果より優先。
 - [leaf_transport_visibility_20261105.json](evidence/leaf_transport_visibility_20261105.json) — [audit_transport.py](audit_transport.py)で元NPZを再集計したバス別受信数・観測範囲・SHA256。
 - [leaf_event_classification_20261105.json](evidence/leaf_event_classification_20261105.json) — [classify_events.py](classify_events.py)で元NPZを再集計した観測分類・区間一覧・解除履歴。
