@@ -9,6 +9,7 @@
 - [2026-11-05: Codexの見解と次のアプローチ](docs/leaf_longitudinal_review_20261105.md) — 既存の観測・仮説・提案を区別したレビュー。新たな実車試験結果ではない。
 - [2026-11-05: 3経路の接続関係と1D6の再集計](docs/leaf_transport_paths_20261105.md) — 受信抽出NPZを3走行で再監査。1D6のbus0/1継続とbus2起動直後の記録を整理。
 - [2026-11-05: 通常要求・協調制動・保持・解除の観測分類](docs/leaf_event_classification_20261105.md) — 保持候補13区間、観測できた解除12例をRES・装置CANCEL等の履歴と照合。
+- [2026-11-05: 特別パターンの境界比較](docs/leaf_boundary_audit_20261105.md) — OFF側を含む45入口・38出口。複数エッジと同一Event内の変化を区別。
 
 ## 実機試験結果
 
@@ -83,6 +84,7 @@
 
 - [leaf_transport_visibility_20261105.json](evidence/leaf_transport_visibility_20261105.json) — [audit_transport.py](audit_transport.py)で元NPZを再集計したバス別受信数・観測範囲・SHA256。
 - [leaf_event_classification_20261105.json](evidence/leaf_event_classification_20261105.json) — [classify_events.py](classify_events.py)で元NPZを再集計した観測分類・区間一覧・解除履歴。
+- [leaf_boundary_audit_20261105.json](evidence/leaf_boundary_audit_20261105.json) — [audit_boundaries.py](audit_boundaries.py)による特別パターンの境界・近傍エッジ全候補・観測時刻区間の比較。
 - [leaf_2aa_state_dbc_checks.json](evidence/leaf_2aa_state_dbc_checks.json)
 - [leaf_bounded_gyro_check.json](evidence/leaf_bounded_gyro_check.json)
 - [leaf_bus1_identity_attempt_001_rlog_audit.json](evidence/leaf_bus1_identity_attempt_001_rlog_audit.json)

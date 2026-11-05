@@ -26,6 +26,7 @@
 - `monitor.py`: 既存の受信専用モニター。通常のopenpilotと別プロセスで明示起動する。公開・送信・Params変更の機能はない。
 - `audit_transport.py`: 元の受信抽出NPZをローカルで集計する。車両接続なし。形式・使い方・結果は[3経路の接続調査](docs/leaf_transport_paths_20261105.md)を参照。
 - `classify_events.py`: 元NPZの受信フィールドを通常要求・協調制動・保持候補に分類し、解除付近のボタン送信要求も併記する。使い方と限界は[観測分類](docs/leaf_event_classification_20261105.md)を参照。
+- `audit_boundaries.py`: 特別パターンの入口/出口に近い1C3エッジを全候補保存し、変化前後の観測区間を比較する。[境界比較](docs/leaf_boundary_audit_20261105.md)を参照。
 - `evidence/`: 主要な監査結果とDBC照合結果。元のrlog・個人の走行ログは含めない。
 - `provenance.json`: 元ファイル、コピー先、SHA256、基点と実験ブランチの版。
 
