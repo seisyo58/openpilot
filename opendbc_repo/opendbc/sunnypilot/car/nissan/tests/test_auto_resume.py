@@ -90,6 +90,18 @@ class TestAutoResumeStateMachine(unittest.TestCase):
     self.assertEqual(presses, [True] * RES_HOLD_FRAMES)
     self.assertFalse(_step(self.resume, 5, lead_drel=7.5))
 
+  def test_extended_press_aborts_after_two_hundred_ms(self):
+    for gate in ({"brake_pressed": True}, {"gas_pressed": True}, {"cancel": True},
+                 {"cruise_enabled": False}, {"parking_blocked": True},
+                 {"standstill": False}, {"enabled": False}):
+      with self.subTest(gate=gate):
+        self.resume = NissanAutoResume(on_transition=lambda _: None)
+        self._arm()
+        self.assertTrue(_step(self.resume, 1, lead_drel=7.5))
+        self.assertTrue(_step(self.resume, 20, lead_drel=7.5))
+        self.assertFalse(_step(self.resume, 1, lead_drel=7.5, **gate))
+        self.assertEqual(self.resume._hold_frames, 0)
+
   def test_single_qualifying_update_triggers_without_confirmation(self):
     self._arm()
     self.assertTrue(_step(self.resume, 1, lead_drel=7.5))
@@ -316,8 +328,8 @@ class TestAutoResumeActuation(unittest.TestCase):
     self.assertTrue(any(res))
     self.assertNotIn(True, cancel)
     self.assertGreaterEqual(sum(res), 1)
-    # 0.12 s at 100 Hz, transmitted every other frame.
-    self.assertLessEqual(sum(res), RES_HOLD_FRAMES // 2 + 1)
+    # The bounded press runs at 100 Hz, transmitted every other frame.
+    self.assertEqual(sum(res), 15)  # 300 ms at the 50 Hz CAN transmission rate.
     res_again, _ = self._buttons(ci, cc, cc_sp, ARM_FRAMES + TRIGGER_FRAMES, 3.0)
     res_again += self._buttons(ci, cc, cc_sp, TRIGGER_FRAMES, 6.5)[0]
     self.assertNotIn(True, res_again)

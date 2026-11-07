@@ -18,7 +18,7 @@ CLOSE_LEAD_M = 8.0
 ARM_S = 1.0
 DEPART_M = 1.0
 DEPART_VREL_MIN = 0.5  # m/s; lead pulling away. Equality does not count.
-RES_HOLD_S = 0.12
+RES_HOLD_S = 0.30  # Experimental longer press; vehicle benefit is unverified.
 COOLDOWN_S = 3.0
 
 ARM_FRAMES = round(ARM_S / DT_CTRL)  # >= 1.0 s
