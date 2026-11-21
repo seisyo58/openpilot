@@ -42,7 +42,8 @@ class IntelligentCruiseButtonManagementInterface(IntelligentCruiseButtonManageme
     self.queued_buttons.clear()
     self.last_button_frame = self.frame
 
-  def update(self, CS, CC_SP, packer, frame, last_button_frame, pcm_cancel_cmd, resume_res=False) -> list[CanData]:
+  def update(self, CS, CC_SP, packer, frame, last_button_frame, pcm_cancel_cmd,
+             auto_cruise_button: str | None = None) -> list[CanData]:
     self.CC_SP = CC_SP
     self.ICBM = CC_SP.intelligentCruiseButtonManagement
     self.frame = frame
@@ -63,8 +64,8 @@ class IntelligentCruiseButtonManagementInterface(IntelligentCruiseButtonManageme
       # One sender owns CRUISE_THROTTLE. Discard queued speed changes at a stop
       # and preserve physical buttons before considering automatic RES.
       self.reset()
-      if resume_res and not any(buttons.values()):
-        send_button = "RES_BUTTON"
+      if auto_cruise_button and not any(buttons.values()):
+        send_button = auto_cruise_button
 
     else:
       if self.button_send_state == ButtonSendState.IDLE and (self.queued_buttons or self.ICBM.sendButton != SendButtonState.none):
