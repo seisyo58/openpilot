@@ -48,6 +48,7 @@ class CarController(CarControllerBase, IntelligentCruiseButtonManagementInterfac
         cancel=bool(CC.cruiseControl.cancel or
                     any(CS.cruise_throttle_msg.get(b, 0) for b in (*REPLAY_BUTTONS, "CANCEL_BUTTON"))),
         lead_vrel=float(lead.vRel),
+        v_ego=float(CS.out.vEgo),
         icc_brake_pt=getattr(CS, "icc_brake_pt", None),
         icc_brake_adas=getattr(CS, "icc_brake_adas", None),
       )
