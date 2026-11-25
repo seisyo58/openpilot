@@ -1,0 +1,97 @@
+{
+  "routes": [
+    "3715a6a4bb"
+  ],
+  "frames_2b0_total": 293912,
+  "v_mismatch": 0,
+  "V_steps": {
+    "count": 293863,
+    "mean": 0.8574,
+    "p50": 0.0,
+    "p90": 1.0,
+    "p99": 2.0,
+    "max": 931
+  },
+  "q_steps": {
+    "count": 293863,
+    "mean": 1.8848,
+    "p50": 0.0,
+    "p90": 5.0,
+    "p99": 10.0,
+    "max": 3303
+  },
+  "wrap_steps": {
+    "count": 304,
+    "mean_abs_dV": 500.5033,
+    "mean_abs_dq": 46.8487,
+    "examples": [
+      {
+        "prev_hex": "dc 53 a2 ac 5b 00 8e 03",
+        "hex": "05 6a 9f ac 5b 00 9e 03",
+        "dV": 471,
+        "dq": 164
+      },
+      {
+        "prev_hex": "fd 62 90 ac 5b 00 5e 03",
+        "hex": "00 7f 8f ac 5b 00 6e 06",
+        "dV": 509,
+        "dq": 11
+      },
+      {
+        "prev_hex": "00 7f 8f ac 5b 00 5e 06",
+        "hex": "ff 60 90 ac 5b 00 6e 09",
+        "dV": 511,
+        "dq": 5
+      },
+      {
+        "prev_hex": "ff 60 90 ac 5b 00 3e 06",
+        "hex": "00 7f 8f ac 5b 00 4e 06",
+        "dV": 511,
+        "dq": 4
+      },
+      {
+        "prev_hex": "00 7f 8f ac 5b 00 ce 03",
+        "hex": "ff 60 90 ac 5b 00 de 0c",
+        "dV": 511,
+        "dq": 7
+      },
+      {
+        "prev_hex": "00 6f 9f ac 5b 00 8e 0c",
+        "hex": "fe 51 a0 ac 5b 00 9e 06",
+        "dV": 510,
+        "dq": 6
+      },
+      {
+        "prev_hex": "ff 50 a0 ac 5b 00 2e 0c",
+        "hex": "00 6f 9f ac 5b 00 3e 06",
+        "dV": 511,
+        "dq": 6
+      },
+      {
+        "prev_hex": "00 6f 9f ac 5b 00 0e 09",
+        "hex": "fe 51 a0 ac 5b 00 1e 09",
+        "dV": 510,
+        "dq": 8
+      },
+      {
+        "prev_hex": "fe 51 a0 ac 5b 00 0e 06",
+        "hex": "00 6f 9f ac 5b 00 1e 09",
+        "dV": 510,
+        "dq": 7
+      },
+      {
+        "prev_hex": "fd 62 90 ac 5b 00 6e 06",
+        "hex": "00 7f 8f ac 5b 00 7e 0c",
+        "dV": 509,
+        "dq": 10
+      }
+    ]
+  },
+  "v_at_2518": {
+    "599": 8718
+  },
+  "v_idle_neutral": {
+    "V": 1315,
+    "count": 152621
+  }
+}

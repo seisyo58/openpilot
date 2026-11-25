@@ -12,6 +12,7 @@
 - [2026-11-05: 3経路の接続関係と1D6の再集計](docs/leaf_transport_paths_20261105.md) — 受信抽出NPZを3走行で再監査。1D6のbus0/1継続とbus2起動直後の記録を整理。
 - [2026-11-05: 通常要求・協調制動・保持・解除の観測分類](docs/leaf_event_classification_20261105.md) — 保持候補13区間、観測できた解除12例をRES・装置CANCEL等の履歴と照合。
 - [2026-11-05: 特別パターンの境界比較](docs/leaf_boundary_audit_20261105.md) — OFF側を含む45入口・38出口。複数エッジと同一Event内の変化を区別。
+- [2026-11-25: 0x2B0符号の2台目交差検査](docs/leaf_2b0_crosscheck_20261125.md) — leaf-gw提案のV/Tとb[4]統計。293,912フレームでV==Vinv不一致0、ニブル入れ替え補正は両車確認、上位ニブル反転は本車で非活動・siignaの確認待ち。
 
 ## 実機試験結果
 
@@ -91,6 +92,9 @@
 - [leaf_transport_visibility_20261105.json](evidence/leaf_transport_visibility_20261105.json) — [audit_transport.py](audit_transport.py)で元NPZを再集計したバス別受信数・観測範囲・SHA256。
 - [leaf_event_classification_20261105.json](evidence/leaf_event_classification_20261105.json) — [classify_events.py](classify_events.py)で元NPZを再集計した観測分類・区間一覧・解除履歴。
 - [leaf_boundary_audit_20261105.json](evidence/leaf_boundary_audit_20261105.json) — [audit_boundaries.py](audit_boundaries.py)による特別パターンの境界・近傍エッジ全候補・観測時刻区間の比較。
+- [leaf_2b0_extract_20261125.json](evidence/leaf_2b0_extract_20261125.json) — [0x2B0符号の2台目交差検査](docs/leaf_2b0_crosscheck_20261125.md)のroute 3715a6a4bb抽出。idle/light/ICC標本・2518パターン・b[4]統計。[extract_2b0_frames.py](extract_2b0_frames.py)で再現。
+- [leaf_2b0_v_check_20261125.json](evidence/leaf_2b0_v_check_20261125.json) — V/Vinv一致・V/qステップ統計・(~b[0])巻き戻り交差例。[check_2b0_v.py](check_2b0_v.py)で再現。
+- [leaf_2b0_t_check_20261125.json](evidence/leaf_2b0_t_check_20261125.json) — T/Vステップ比較・b[2]上位8<->9境界付近の文脈。[check_2b0_t.py](check_2b0_t.py)で再現。
 - [leaf_2aa_state_dbc_checks.json](evidence/leaf_2aa_state_dbc_checks.json)
 - [leaf_bounded_gyro_check.json](evidence/leaf_bounded_gyro_check.json)
 - [leaf_bus1_identity_attempt_001_rlog_audit.json](evidence/leaf_bus1_identity_attempt_001_rlog_audit.json)

@@ -1,0 +1,451 @@
+{
+  "routes": [
+    "3715a6a4bb"
+  ],
+  "segments_scanned": 49,
+  "frames_2b0_total": 293912,
+  "idle_ready": [
+    {
+      "segment": "00000088--3715a6a4bb--0",
+      "t_s": 6.111,
+      "hex": "dc 53 a2 8c 1b 00 de 03",
+      "vEgo": 0.0,
+      "aEgo": 0.0,
+      "cruise_enabled": false,
+      "gear": "park"
+    },
+    {
+      "segment": "00000088--3715a6a4bb--0",
+      "t_s": 6.122,
+      "hex": "dc 53 a2 8c 1b 00 ee 03",
+      "vEgo": 0.0,
+      "aEgo": 0.0,
+      "cruise_enabled": false,
+      "gear": "park"
+    },
+    {
+      "segment": "00000088--3715a6a4bb--0",
+      "t_s": 6.131,
+      "hex": "dc 53 a2 8c 1b 00 fe 03",
+      "vEgo": 0.0,
+      "aEgo": 0.0,
+      "cruise_enabled": false,
+      "gear": "park"
+    },
+    {
+      "segment": "00000088--3715a6a4bb--0",
+      "t_s": 6.142,
+      "hex": "dc 53 a2 8c 1b 00 0e 03",
+      "vEgo": 0.0,
+      "aEgo": 0.0,
+      "cruise_enabled": false,
+      "gear": "park"
+    },
+    {
+      "segment": "00000088--3715a6a4bb--0",
+      "t_s": 6.151,
+      "hex": "dc 53 a2 8c 1b 00 1e 03",
+      "vEgo": 0.0,
+      "aEgo": 0.0,
+      "cruise_enabled": false,
+      "gear": "park"
+    }
+  ],
+  "light_accel": [
+    {
+      "segment": "00000088--3715a6a4bb--1",
+      "t_s": 92.6,
+      "hex": "dc 53 a2 8c 1b 00 5e 03",
+      "vEgo": 0.6461443901062012,
+      "aEgo": 0.5357469916343689,
+      "cruise_enabled": false,
+      "gear": "drive"
+    },
+    {
+      "segment": "00000088--3715a6a4bb--1",
+      "t_s": 92.609,
+      "hex": "dc 53 a2 8c 1b 00 6e 03",
+      "vEgo": 0.6499971747398376,
+      "aEgo": 0.5214037299156189,
+      "cruise_enabled": false,
+      "gear": "drive"
+    },
+    {
+      "segment": "00000088--3715a6a4bb--1",
+      "t_s": 92.619,
+      "hex": "dc 53 a2 8c 1b 00 7e 03",
+      "vEgo": 0.6546677947044373,
+      "aEgo": 0.5162231922149658,
+      "cruise_enabled": false,
+      "gear": "drive"
+    },
+    {
+      "segment": "00000088--3715a6a4bb--1",
+      "t_s": 92.629,
+      "hex": "dc 53 a2 8c 1b 00 8e 03",
+      "vEgo": 0.6584736108779907,
+      "aEgo": 0.503292977809906,
+      "cruise_enabled": false,
+      "gear": "drive"
+    },
+    {
+      "segment": "00000088--3715a6a4bb--1",
+      "t_s": 92.64,
+      "hex": "dc 53 a2 8c 1b 00 9e 03",
+      "vEgo": 0.6623942255973816,
+      "aEgo": 0.4926898777484894,
+      "cruise_enabled": false,
+      "gear": "drive"
+    }
+  ],
+  "icc_regen": [
+    {
+      "segment": "00000088--3715a6a4bb--3",
+      "t_s": 233.629,
+      "hex": "3f 60 9c ac 5b 00 ae 06",
+      "vEgo": 11.944061279296875,
+      "aEgo": -0.5344879627227783,
+      "cruise_enabled": true,
+      "gear": "drive"
+    },
+    {
+      "segment": "00000088--3715a6a4bb--3",
+      "t_s": 233.639,
+      "hex": "42 6d 9b ac 5b 00 be 03",
+      "vEgo": 11.942590713500977,
+      "aEgo": -0.4975561499595642,
+      "cruise_enabled": true,
+      "gear": "drive"
+    },
+    {
+      "segment": "00000088--3715a6a4bb--3",
+      "t_s": 233.65,
+      "hex": "45 6a 9b ac 5b 00 ce 03",
+      "vEgo": 11.94035530090332,
+      "aEgo": -0.47143518924713135,
+      "cruise_enabled": true,
+      "gear": "drive"
+    },
+    {
+      "segment": "00000088--3715a6a4bb--3",
+      "t_s": 233.659,
+      "hex": "48 67 9b ac 5b 00 de 03",
+      "vEgo": 11.936957359313965,
+      "aEgo": -0.4588890075683594,
+      "cruise_enabled": true,
+      "gear": "drive"
+    },
+    {
+      "segment": "00000088--3715a6a4bb--3",
+      "t_s": 233.668,
+      "hex": "4b 64 9b ac 5b 00 ee 03",
+      "vEgo": 11.93427562713623,
+      "aEgo": -0.4407043159008026,
+      "cruise_enabled": true,
+      "gear": "drive"
+    }
+  ],
+  "discontinuity": {
+    "found": true,
+    "frames": [
+      {
+        "segment": "00000088--3715a6a4bb--3",
+        "t_s": 233.249,
+        "hex": "dc 53 a2 ac 5b 00 4e 03",
+        "vEgo": 12.175243377685547,
+        "aEgo": 0.2168068289756775,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--3",
+        "t_s": 233.26,
+        "hex": "dc 53 a2 ac 5b 00 5e 03",
+        "vEgo": 12.173380851745605,
+        "aEgo": 0.1783776879310608,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--3",
+        "t_s": 233.269,
+        "hex": "dc 53 a2 ac 5b 00 6e 03",
+        "vEgo": 12.169885635375977,
+        "aEgo": 0.12806077301502228,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--3",
+        "t_s": 233.279,
+        "hex": "dc 53 a2 ac 5b 00 7e 03",
+        "vEgo": 12.16540813446045,
+        "aEgo": 0.0731719359755516,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--3",
+        "t_s": 233.289,
+        "hex": "dc 53 a2 ac 5b 00 8e 03",
+        "vEgo": 12.161161422729492,
+        "aEgo": 0.02571221813559532,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--3",
+        "t_s": 233.299,
+        "hex": "05 6a 9f ac 5b 00 9e 03",
+        "vEgo": 12.15717887878418,
+        "aEgo": -0.01470075361430645,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--3",
+        "t_s": 233.309,
+        "hex": "05 6a 9f ac 5b 00 ae 06",
+        "vEgo": 12.154634475708008,
+        "aEgo": -0.03755957633256912,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--3",
+        "t_s": 233.319,
+        "hex": "05 6a 9f ac 5b 00 be 06",
+        "vEgo": 12.152303695678711,
+        "aEgo": -0.05619565770030022,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--3",
+        "t_s": 233.33,
+        "hex": "05 6a 9f ac 5b 00 ce 09",
+        "vEgo": 12.14596176147461,
+        "aEgo": -0.11129387468099594,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--3",
+        "t_s": 233.339,
+        "hex": "05 6a 9f ac 5b 00 de 0c",
+        "vEgo": 12.135156631469727,
+        "aEgo": -0.2036880999803543,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--3",
+        "t_s": 233.35,
+        "hex": "06 69 9f ac 5b 00 ee 06",
+        "vEgo": 12.1253080368042,
+        "aEgo": -0.2781534790992737,
+        "cruise_enabled": true,
+        "gear": "drive"
+      }
+    ],
+    "note": null
+  },
+  "pattern_2518": {
+    "count": 8718,
+    "examples": [
+      {
+        "segment": "00000088--3715a6a4bb--13",
+        "t_s": 793.309,
+        "hex": "a8 27 d5 ac 5b 00 2e 09",
+        "vEgo": 7.387750148773193,
+        "aEgo": 0.2203216403722763,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--13",
+        "t_s": 793.32,
+        "hex": "a8 27 d5 ac 5b 00 3e 09",
+        "vEgo": 7.3898491859436035,
+        "aEgo": 0.21933050453662872,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--13",
+        "t_s": 793.329,
+        "hex": "a8 27 d5 ac 5b 00 4e 09",
+        "vEgo": 7.391573429107666,
+        "aEgo": 0.21485617756843567,
+        "cruise_enabled": true,
+        "gear": "drive"
+      }
+    ]
+  },
+  "b4_icc_stats": {
+    "vs_enabled": {
+      "bit1_engaged": 143374,
+      "bit1_not_engaged": 61,
+      "bit0_engaged": 36241,
+      "bit0_not_engaged": 113802,
+      "agree_pct": 87.63
+    },
+    "vs_available": {
+      "bit1_engaged": 143435,
+      "bit1_not_engaged": 0,
+      "bit0_engaged": 120871,
+      "bit0_not_engaged": 29172,
+      "agree_pct": 58.814
+    }
+  },
+  "followup": {
+    "light_accel_icc": [
+      {
+        "segment": "00000088--3715a6a4bb--3",
+        "t_s": 231.959,
+        "hex": "dc 53 a2 ac 5b 00 3e 03",
+        "vEgo": 11.337783813476562,
+        "aEgo": 0.7773560285568237,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--3",
+        "t_s": 231.969,
+        "hex": "dc 53 a2 ac 5b 00 4e 03",
+        "vEgo": 11.345206260681152,
+        "aEgo": 0.7740036845207214,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--3",
+        "t_s": 231.979,
+        "hex": "dc 53 a2 ac 5b 00 5e 03",
+        "vEgo": 11.351303100585938,
+        "aEgo": 0.7583365440368652,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--3",
+        "t_s": 231.989,
+        "hex": "dc 53 a2 ac 5b 00 6e 03",
+        "vEgo": 11.3603515625,
+        "aEgo": 0.7723067402839661,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--3",
+        "t_s": 231.999,
+        "hex": "dc 53 a2 ac 5b 00 7e 03",
+        "vEgo": 11.367964744567871,
+        "aEgo": 0.771262526512146,
+        "cruise_enabled": true,
+        "gear": "drive"
+      }
+    ],
+    "bit0_engaged_samples": [
+      {
+        "segment": "00000088--3715a6a4bb--4",
+        "t_s": 283.769,
+        "hex": "dc 53 a2 ac 1b 00 fe 03",
+        "vEgo": 17.956321716308594,
+        "aEgo": 0.05883696675300598,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--12",
+        "t_s": 749.779,
+        "hex": "dc 53 a2 ac 1b 00 2e 03",
+        "vEgo": 19.671829223632812,
+        "aEgo": 0.08547820895910263,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--13",
+        "t_s": 802.269,
+        "hex": "dc 53 a2 ac 1b 00 2e 03",
+        "vEgo": 7.530564171374932e-13,
+        "aEgo": -9.702260696242693e-12,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--14",
+        "t_s": 870.529,
+        "hex": "dc 53 a2 ac 1b 00 be 03",
+        "vEgo": 1.4744497940297197e-12,
+        "aEgo": -2.264398087439834e-12,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--15",
+        "t_s": 901.779,
+        "hex": "dc 53 a2 ac 1b 00 fe 03",
+        "vEgo": -0.0,
+        "aEgo": 0.0,
+        "cruise_enabled": true,
+        "gear": "drive"
+      },
+      {
+        "segment": "00000088--3715a6a4bb--17",
+        "t_s": 1033.359,
+        "hex": "dc 53 a2 ac 1b 00 4e 03",
+        "vEgo": -4.590434477848293e-13,
+        "aEgo": -6.108705988966401e-12,
+        "cruise_enabled": true,
+        "gear": "drive"
+      }
+    ],
+    "bit1_notengaged": {
+      "count": 61,
+      "by_gear": {
+        "drive": 61
+      },
+      "examples": [
+        {
+          "segment": "00000088--3715a6a4bb--3",
+          "t_s": 230.97,
+          "hex": "dc 53 a2 ac 5b 00 0e 03",
+          "vEgo": 10.591446876525879,
+          "aEgo": 0.9359819293022156,
+          "cruise_enabled": false,
+          "gear": "drive"
+        },
+        {
+          "segment": "00000088--3715a6a4bb--4",
+          "t_s": 291.5,
+          "hex": "dc 53 a2 ac 5b 00 4e 03",
+          "vEgo": 21.034154891967773,
+          "aEgo": 0.26176702976226807,
+          "cruise_enabled": false,
+          "gear": "drive"
+        },
+        {
+          "segment": "00000088--3715a6a4bb--6",
+          "t_s": 376.049,
+          "hex": "8a 55 a7 ac 5b 00 ae 03",
+          "vEgo": 16.280500411987305,
+          "aEgo": -0.11621604114770889,
+          "cruise_enabled": false,
+          "gear": "drive"
+        }
+      ]
+    },
+    "bit_by_speed": {
+      "engaged_moving": {
+        "bit1": 139576,
+        "bit0": 11
+      },
+      "engaged_stopped": {
+        "bit1": 3798,
+        "bit0": 36230
+      }
+    }
+  }
+}
