@@ -2,9 +2,9 @@
 
 知識の入口は[引き継ぎ文書](HANDOFF.md)。以下はこのブランチに実際に含まれる資料の索引。
 
-[原ログの保存状況](DATA_RETENTION.md): 2026-11-05にユーザーがConnectで保存した5ルートと、解析時欠損・再取得の入口。保存状態はユーザー申告で、ライブ照合ではない。
+[原ログの保存状況](DATA_RETENTION.md): 2026-11-05にユーザーがConnectで保存した5ルート。Preservedフラグはユーザー申告で、原rlog66件の取得・読み取り・ハッシュは後続で確認済み。
 
-[進行中の調査項目](INVESTIGATION_STATUS.md)と[原rlog復旧後の最新結果](docs/leaf_raw_recovery_20261105.md)を参照。取得・解析元66区間の照合と5aの欠損解消は後続で実施済み。
+[調査項目一覧](INVESTIGATION_STATUS.md)、[終了監査と再開条件](COMPLETION_AUDIT.md)、[原rlog復旧後の最新結果](docs/leaf_raw_recovery_20261105.md)を参照。取得・解析元66区間の照合と5aの欠損解消は実施済み。
 
 ## 調査履歴に対するレビュー
 
