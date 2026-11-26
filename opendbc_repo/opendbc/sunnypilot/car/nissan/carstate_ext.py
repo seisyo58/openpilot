@@ -8,6 +8,7 @@ from enum import StrEnum
 
 from opendbc.car import Bus, structs
 from opendbc.can.parser import CANParser
+from opendbc.car.nissan.values import CAR
 from opendbc.sunnypilot.car.nissan.values import BUTTONS, NissanSafetyFlagsSP
 from opendbc.sunnypilot.car.nissan.parking import NissanParkingInterlock
 
@@ -26,6 +27,14 @@ class CarStateExt:
     if self.parking is not None:
       ret_sp.nissanParkingActive = self.parking.active
       ret_sp.nissanParkingBlocked = self.parking.blocked
+
+    if self.CP.carFingerprint in (CAR.NISSAN_LEAF, CAR.NISSAN_LEAF_IC):
+      cp_cam = can_parsers[Bus.cam]
+      msg = cp_cam.vl.get("PROPILOT_REQUEST")
+      if msg:
+        hi = msg.get("ADAS_REQUEST_HI", 0)
+        lo = msg.get("ADAS_REQUEST_LO", 0)
+        ret_sp.leafAdasRequestT = (hi << 4) | lo
 
     button_events = []
     for button in BUTTONS:

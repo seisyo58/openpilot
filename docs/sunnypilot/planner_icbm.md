@@ -107,3 +107,34 @@ CAN clicks. Recorded OEM setpoints/acceleration still come from the old drive;
 this does not simulate the revised vehicle response or prove collision avoidance.
 The downward rounding can select a target up to almost 5 km/h below the original
 curve target. Real response and the settling interval require validation.
+
+## ADAS-request T feedback (0x2B0)
+
+CAN 0x2B0 (decimal 688, bus 1) carries the stock Nissan ADAS accel/brake request.
+The smooth request value is a 12-bit quantity decoded as
+`T = (b[2] << 4) | (b[1] & 0x0F)` from `ADAS_REQUEST_HI`/`ADAS_REQUEST_LO` on the
+`PROPILOT_REQUEST` message. Larger T = more braking. Reference points: ~2530 ≈
+0 m/s², ~2270 ≈ +0.8 m/s², ~2800 ≈ −0.8 m/s², idle ≈ 2595, friction-brake
+marker ≈ 3415. 0x2B0 was not previously defined in the Leaf DBC; the generator
+source now carries it so the runtime-generated `nissan_leaf_2018_generated` DBC
+exposes the message. `CarStateExt.update` reads it defensively (missing message
+→ 0) and stores it in `CarStateSP.leafAdasRequestT`.
+
+In `pace_leaf_button`, "confirmation" means the ADAS request T has moved in the
+direction the acknowledged press intended. After a press is acknowledged (the
+OEM setpoint cluster changed) the current T and the requested direction are
+recorded as the reference. During the settle window the next press is released
+early only when all of: T is valid (> 0), a reference exists, at least
+`LEAF_T_MIN_SETTLE` (0.3 s) has passed since the acknowledgement, and T has moved
+by at least `LEAF_T_CONFIRM_DELTA` (30 counts) in the expected direction — a
+decrease press expects T to rise, an increase press expects T to fall. The
+reference is cleared wherever `leaf_pending` is cleared (and when the settle
+ends), so a new press always starts from a fresh reference.
+
+When T is unavailable (0) or never confirms, the timing is identical to the
+previous fixed behavior: the full `LEAF_SETTLE_TIME` (1.0 s) settle is observed
+and no early release occurs. This is receive-only; which buttons are sent, the
+targets, and all non-Leaf behavior are unchanged.
+
+`LEAF_T_CONFIRM_DELTA` and `LEAF_T_MIN_SETTLE` are initial uncalibrated guesses
+to be tuned from logs.

@@ -7,6 +7,7 @@ import openpilot.cereal.messaging as messaging
 
 from openpilot.cereal import log, custom
 from opendbc.car.structs import car
+from opendbc.car.nissan.values import CAR as NISSAN
 from openpilot.cereal.visionipc import VisionStreamType
 from msgq.visionipc import VisionIpcClient
 
@@ -111,7 +112,9 @@ class SelfdriveD:
                                    'managerState', 'vehicleParameters', 'radarState', 'lateralTorqueParameters',
                                    'controlsState', 'carControl', 'driverAssistance', 'alertDebug', 'userBookmark',
                                    'lateralManeuverPlan', 'modelDataV2SP', 'longitudinalPlanSP'] + \
-                                   (['carStateSP'] if parking_interlock_enabled(self.CP, self.CP_SP) else []) + \
+                                   (['carStateSP'] if (parking_interlock_enabled(self.CP, self.CP_SP) or
+                                                       self.CP.carFingerprint in (NISSAN.NISSAN_LEAF, NISSAN.NISSAN_LEAF_IC) and
+                                                       not self.CP.openpilotLongitudinalControl) else []) + \
                                    self.camera_packets + self.sensor_packets + self.gps_packets,
                                   ignore_alive=ignore, ignore_avg_freq=ignore,
                                   ignore_valid=ignore, frequency=int(1/DT_CTRL))
@@ -179,6 +182,10 @@ class SelfdriveD:
 
     self.mads = ModularAssistiveDrivingSystem(self)
     self.icbm = IntelligentCruiseButtonManagement(self.CP, self.CP_SP)
+
+    self.car_state_sp_subscribed = (parking_interlock_enabled(self.CP, self.CP_SP) or
+                                    self.CP.carFingerprint in (NISSAN.NISSAN_LEAF, NISSAN.NISSAN_LEAF_IC) and
+                                    not self.CP.openpilotLongitudinalControl)
 
     self.car_events_sp = CarSpecificEventsSP(self.CP, self.CP_SP)
 
@@ -523,7 +530,8 @@ class SelfdriveD:
         self.events.add(EventName.personalityChanged)
 
     self.icbm.run(CS, self.sm['carControl'], self.sm['longitudinalPlanSP'], self.is_metric,
-                  self.sm['longitudinalPlan'], plan_valid=planner_data_valid(self.sm, time.monotonic()))
+                  self.sm['longitudinalPlan'], plan_valid=planner_data_valid(self.sm, time.monotonic()),
+                  CS_SP=self.sm['carStateSP'] if self.car_state_sp_subscribed else None)
 
   def data_sample(self):
     _car_state = messaging.recv_one(self.car_state_sock)

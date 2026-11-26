@@ -168,3 +168,4 @@ class CarStateSP:
   speedLimit: float = auto_field()
   nissanParkingActive: bool = auto_field()
   nissanParkingBlocked: bool = auto_field()
+  leafAdasRequestT: int = auto_field()

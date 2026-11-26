@@ -21,10 +21,10 @@ def setup(car=CAR.NISSAN_LEAF_IC, speed=60., target=80.):
   return controller, cs, cc, sp, plan
 
 
-def tick(c, cs, cc, sp, plan, valid=True, metric=True, frames=60):
+def tick(c, cs, cc, sp, plan, valid=True, metric=True, frames=60, CS_SP=None):
   buttons = []
   for _ in range(frames):
-    c.run(cs, cc, sp, metric, plan, plan_valid=valid)
+    c.run(cs, cc, sp, metric, plan, plan_valid=valid, CS_SP=CS_SP)
     buttons.append(c.cruise_button)
   return buttons
 
@@ -304,3 +304,59 @@ def test_new_deceleration_cancels_pending_increase():
   c.leaf_pending = (55, c.leaf_time, SendButtonState.increase)
   assert c.pace_leaf_button(SendButtonState.increase) == SendButtonState.none
   assert c.leaf_pending is None
+
+
+def _establish_decrease_press(c, cs, cc, sp, plan, cs_sp=None):
+  """Run until a decrease press is in flight (pending acknowledgement)."""
+  for _ in range(60):
+    c.run(cs, cc, sp, True, plan, plan_valid=True, CS_SP=cs_sp)
+  assert c.cruise_button == SendButtonState.decrease
+  assert c.leaf_pending is not None
+
+
+def test_t_rise_after_decrease_press_allows_early_next_press():
+  c, cs, cc, sp, plan = setup(target=60.)
+  sp.vTarget = 45 / 3.6
+  cs_sp = custom.CarStateSP(leafAdasRequestT=2500)
+  _establish_decrease_press(c, cs, cc, sp, plan, cs_sp)
+  # OEM acknowledges the decrease by lowering the setpoint...
+  cs.cruiseState.speedCluster = 55 / 3.6
+  buttons = []
+  for i in range(120):
+    # ...T at the acknowledgement frame is the reference, then T rises to confirm braking
+    cs_sp.leafAdasRequestT = 2500 if i == 0 else 2540
+    c.run(cs, cc, sp, True, plan, plan_valid=True, CS_SP=cs_sp)
+    buttons.append(c.cruise_button)
+  # T confirmed the decrease: the next press arrives before the full 1.0 s settle elapses
+  assert SendButtonState.decrease in buttons[:80]
+  # ...but not before LEAF_T_MIN_SETTLE has passed since the acknowledgement
+  assert SendButtonState.decrease not in buttons[:30]
+
+
+def test_no_sp_keeps_full_settle():
+  c, cs, cc, sp, plan = setup(target=60.)
+  sp.vTarget = 45 / 3.6
+  _establish_decrease_press(c, cs, cc, sp, plan, cs_sp=None)
+  cs.cruiseState.speedCluster = 55 / 3.6
+  buttons = []
+  for _ in range(120):
+    c.run(cs, cc, sp, True, plan, plan_valid=True, CS_SP=None)
+    buttons.append(c.cruise_button)
+  # without T feedback the full LEAF_SETTLE_TIME (1.0 s = 100 frames) is observed
+  assert SendButtonState.decrease not in buttons[:80]
+  assert SendButtonState.decrease in buttons[:115]
+
+
+def test_t_moving_opposite_direction_does_not_release_early():
+  c, cs, cc, sp, plan = setup(target=60.)
+  sp.vTarget = 45 / 3.6
+  cs_sp = custom.CarStateSP(leafAdasRequestT=2500)
+  _establish_decrease_press(c, cs, cc, sp, plan, cs_sp)
+  cs.cruiseState.speedCluster = 55 / 3.6
+  buttons = []
+  for i in range(120):
+    # a decrease press expects T to rise; T falling the opposite way must not confirm
+    cs_sp.leafAdasRequestT = 2500 if i == 0 else 2460
+    c.run(cs, cc, sp, True, plan, plan_valid=True, CS_SP=cs_sp)
+    buttons.append(c.cruise_button)
+  assert SendButtonState.decrease not in buttons[:80]

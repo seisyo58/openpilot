@@ -457,6 +457,7 @@ struct CarStateSP @0xb86e6369214c01c8 {
   speedLimit @0 :Float32;
   nissanParkingActive @1 :Bool;
   nissanParkingBlocked @2 :Bool;
+  leafAdasRequestT @3 :Int32;
 }
 
 struct LiveMapDataSP @0xf416ec09499d9d19 {
