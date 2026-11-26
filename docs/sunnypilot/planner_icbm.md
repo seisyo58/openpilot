@@ -17,11 +17,12 @@ the existing SP target). Compare aTarget with measured carState.aEgo:
 
 - If braking is insufficient by more than 0.15 m/s², lower the cap at a rate
   proportional to the acceleration error, limited to 2 m/s per second.
-- Never request more than 2 km/h below the acknowledged OEM setting while
+- Never request more than one 5 km/h step below the acknowledged OEM setting while
   waiting for its response. OEM button steps can still overshoot this target.
 - If already braking enough, raise the cap to at least the current OEM setting
   to stop further downward button requests. Excess braking allows gradual
-  upward correction, limited to 0.5 m/s per second.
+  upward correction of the internal cap, limited to 0.5 m/s per second.
+  Metric Leaf RES output is inhibited while planner deceleration remains active.
 - After the deceleration request clears, release the cap at 0.5 m/s per second
   rather than jumping straight back to the user target.
 
@@ -70,3 +71,39 @@ PYTHONPATH=.:opendbc_repo .venv/bin/python \
 The replay tool processes one segment, assumes metric display, starts with an
 empty ICBM state, and compares planner-connected and existing target selection.
 Raw logs are kept outside the repository.
+
+## Metric Leaf 5 km/h revision (2026-11-01)
+
+59 tests and 9 subtests passed; Ruff and diff checks passed.
+
+All metric Leaf targets, including SP curve/map/limit targets and planner caps,
+are rounded down to a multiple of 5 km/h, bounded at 30 km/h. A 0.0001 km/h
+tolerance handles Float32 representation of exact multiples; it is not a driving
+deadband. Other platforms and imperial target rounding remain unchanged.
+
+For moving metric Leaf only, a button request ends on any acknowledged setpoint
+change, on target-direction cancellation, or after a 0.3s timeout. After it ends,
+wait 1s before another request. An increase must additionally be requested
+continuously for 1s, and is inhibited while planner deceleration is active.
+Targets can keep updating during settling, but no buttons are requested. The
+low-level Nissan CAN sender still emits its existing 60ms press/release pulses;
+this pacing is not a guarantee of exactly one physical press if ACK is delayed.
+No standstill RES/set-speed handling or low-level Nissan CAN code is changed.
+
+A CAN-level test using the actual Nissan button sender and packer, with a
+simulated 40ms OEM acknowledgement, requests 57 km/h from 60 and sends one SET,
+settles at 55, and sends no RES during five seconds of simulation.
+
+Offline replay of route 00000054--40ca87611f with the same recorded inputs:
+
+| Interval (JST) | Old requested direction reversals | New reversals |
+| --- | ---: | ---: |
+| 11:39:20–35 | 83 | 0 |
+| 11:40:30–37.55 | 58 | 0 |
+
+RES request samples during aTarget <= -0.3 in the second interval decrease
+from 12 to zero. These are high-level request changes, not counts of transmitted
+CAN clicks. Recorded OEM setpoints/acceleration still come from the old drive;
+this does not simulate the revised vehicle response or prove collision avoidance.
+The downward rounding can select a target up to almost 5 km/h below the original
+curve target. Real response and the settling interval require validation.

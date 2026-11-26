@@ -33,7 +33,7 @@ def tick(c, cs, cc, sp, plan, valid=True, metric=True, frames=60):
 def test_deceleration_reaches_button_sender(car):
   c, cs, cc, sp, plan = setup(car=car)
   assert SendButtonState.decrease in tick(c, cs, cc, sp, plan)
-  assert 78 <= c.v_target < 80  # bounded adjustment from acknowledged OEM setpoint
+  assert c.v_target == 75  # one OEM step below acknowledged setting
 
 
 def test_curve_and_speed_limit_target_remains_upper_bound():
@@ -97,7 +97,7 @@ def test_recovery_uses_existing_acceleration_and_user_target():
   tick(c, cs, cc, sp, plan)
   cs.cruiseState.speedCluster = 49/3.6
   plan.aTarget = 0.
-  assert SendButtonState.increase in tick(c, cs, cc, sp, plan)
+  assert SendButtonState.increase in tick(c, cs, cc, sp, plan, frames=250)
   assert c.v_target <= 80
 
 
@@ -180,7 +180,7 @@ def test_request_release_is_rate_limited():
 def test_pending_reduction_is_bounded_without_oem_response():
   c, cs, cc, sp, plan = setup()
   tick(c, cs, cc, sp, plan, frames=1000)
-  assert c.planner_cap >= cs.cruiseState.speedCluster - 2/3.6 - 1e-6
+  assert c.planner_cap >= cs.cruiseState.speedCluster - 5/3.6 - 1e-6
 
 
 def test_threshold_hysteresis_preserves_deceleration_mode():
@@ -192,3 +192,115 @@ def test_threshold_hysteresis_preserves_deceleration_mode():
   plan.aTarget = -.09
   tick(c, cs, cc, sp, plan)
   assert not c.planner_decelerating
+
+
+@pytest.mark.parametrize('target,expected', [(57., 55), (58., 55), (60., 60), (54.99, 50), (30., 30)])
+def test_leaf_quantizes_all_targets(target, expected):
+  c, cs, cc, sp, plan = setup(target=target)
+  plan.aTarget = 0.
+  tick(c, cs, cc, sp, plan)
+  assert c.v_target == expected
+
+
+def test_waits_after_acknowledgement():
+  c, cs, cc, sp, plan = setup(target=60.)
+  sp.vTarget = 45/3.6
+  tick(c, cs, cc, sp, plan, frames=60)
+  cs.cruiseState.speedCluster = 55/3.6
+  assert all(b == SendButtonState.none for b in tick(c, cs, cc, sp, plan, frames=80))
+  assert SendButtonState.decrease in tick(c, cs, cc, sp, plan, frames=60)
+
+
+def test_pending_press_cannot_reverse_direction():
+  c, cs, cc, sp, plan = setup(target=60.)
+  plan.aTarget = 0.
+  sp.vTarget = 55/3.6
+  tick(c, cs, cc, sp, plan)
+  sp.vTarget = 65/3.6
+  assert all(b == SendButtonState.none for b in tick(c, cs, cc, sp, plan, frames=50))
+
+
+def test_no_res_during_planner_deceleration():
+  c, cs, cc, sp, plan = setup(target=60.)
+  tick(c, cs, cc, sp, plan)
+  cs.cruiseState.speedCluster = 55/3.6
+  cs.aEgo = -1.5
+  assert SendButtonState.increase not in tick(c, cs, cc, sp, plan, frames=400)
+
+
+def test_button_request_times_out_without_acknowledgement():
+  c, cs, cc, sp, plan = setup(target=60.)
+  sp.vTarget = 50/3.6
+  ds = tick(c, cs, cc, sp, plan, frames=500)
+  longest = run = 0
+  for b in ds:
+    run = run + 1 if b == SendButtonState.decrease else 0
+    longest = max(longest, run)
+  assert 0 < longest <= 31
+
+
+def test_nissan_can_buttons_settle_at_55_without_res_bounce():
+  from opendbc.can.packer import CANPacker
+  from opendbc.sunnypilot.car.nissan.icbm import IntelligentCruiseButtonManagementInterface
+  from opendbc.sunnypilot.car.nissan.nissancan_ext import LEAF_CRUISE_THROTTLE_SIGNALS
+
+  c, cs, cc, sp, plan = setup(target=60.)
+  plan.aTarget = 0.
+  sp.vTarget = 57/3.6
+  sender = IntelligentCruiseButtonManagementInterface(c.CP, c.CP_SP)
+  packer = CANPacker('nissan_leaf_2018_generated')
+  stock = dict.fromkeys(LEAF_CRUISE_THROTTLE_SIGNALS, 0)
+  stock['NO_BUTTON_PRESSED'] = 1
+  wrapper = NS(out=cs, cruise_throttle_msg=stock)
+  controls = structs.CarControlSP()
+  previous = (False, False)
+  pending = None
+  presses = []
+  for frame in range(500):
+    if pending is not None and frame >= pending:
+      cs.cruiseState.speedCluster = 55/3.6
+      pending = None
+    tick(c, cs, cc, sp, plan, frames=1)
+    controls.intelligentCruiseButtonManagement.sendButton = {
+      SendButtonState.none: structs.IntelligentCruiseButtonManagement.SendButtonState.none,
+      SendButtonState.increase: structs.IntelligentCruiseButtonManagement.SendButtonState.increase,
+      SendButtonState.decrease: structs.IntelligentCruiseButtonManagement.SendButtonState.decrease,
+    }[c.cruise_button]
+    if frame % 2:
+      continue
+    messages = sender.update(wrapper, controls, packer, frame, sender.last_button_frame, False)
+    data = messages[0][1]
+    buttons = (bool(data[3] & 16), bool(data[3] & 8))
+    if buttons != previous and any(buttons):
+      presses.append(buttons)
+      pending = frame + 4  # observed OEM acknowledgement, 40ms after press
+    previous = buttons
+  assert presses == [(False, True)]
+  assert round(cs.cruiseState.speedCluster * 3.6) == 55
+
+
+def test_other_platform_nonmultiple_target_unchanged():
+  c, cs, cc, sp, plan = setup(car=CAR.NISSAN_XTRAIL, target=57.)
+  plan.aTarget = 0.
+  tick(c, cs, cc, sp, plan)
+  assert c.v_target == 57
+
+
+def test_standstill_does_not_use_moving_button_pacing():
+  c, cs, cc, sp, plan = setup(target=60.)
+  cs.standstill = True
+  sp.vTarget = 50/3.6
+  plan.aTarget = 0.
+  tick(c, cs, cc, sp, plan)
+  assert c.cruise_button == SendButtonState.decrease
+  assert c.leaf_pending is None
+
+
+def test_new_deceleration_cancels_pending_increase():
+  c, *_ = setup()
+  c.is_ready = True
+  c.planner_decelerating = True
+  c.v_cruise_cluster = 55
+  c.leaf_pending = (55, c.leaf_time, SendButtonState.increase)
+  assert c.pace_leaf_button(SendButtonState.increase) == SendButtonState.none
+  assert c.leaf_pending is None
