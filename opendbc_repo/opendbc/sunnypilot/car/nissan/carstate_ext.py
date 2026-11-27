@@ -30,10 +30,13 @@ class CarStateExt:
 
     if self.CP.carFingerprint in (CAR.NISSAN_LEAF, CAR.NISSAN_LEAF_IC):
       cp_cam = can_parsers[Bus.cam]
-      msg = cp_cam.vl.get("PROPILOT_REQUEST")
+      try:
+        msg = cp_cam.vl["PROPILOT_REQUEST"]
+      except Exception:
+        msg = None
       if msg:
-        hi = msg.get("ADAS_REQUEST_HI", 0)
-        lo = msg.get("ADAS_REQUEST_LO", 0)
+        hi = int(msg.get("ADAS_REQUEST_HI", 0))
+        lo = int(msg.get("ADAS_REQUEST_LO", 0))
         ret_sp.leafAdasRequestT = (hi << 4) | lo
 
     button_events = []
