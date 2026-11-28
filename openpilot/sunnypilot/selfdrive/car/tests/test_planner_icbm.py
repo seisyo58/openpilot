@@ -9,6 +9,7 @@ from openpilot.cereal import custom, log
 from openpilot.sunnypilot.selfdrive.car.intelligent_cruise_button_management.controller import (
   IntelligentCruiseButtonManagement, LeafTReference, SendButtonState, car_state_sp_valid, planner_data_valid,
   LEAF_INCREASE_CONFIRM_FRAMES, LEAF_SETTLE_FRAMES, LEAF_T_CONFIRM_DELTA, LEAF_T_MIN_SETTLE_FRAMES, LEAF_T_TREND_FRAMES,
+  LEAF_REVERSE_DWELL_RES_AFTER_SET_FRAMES, LEAF_REVERSE_DWELL_SET_AFTER_RES_FRAMES,
 )
 
 
@@ -18,7 +19,9 @@ def setup(car=CAR.NISSAN_LEAF_IC, speed=60., target=80.):
   cs = structs.CarState(vEgo=speed/3.6, cruiseState={'enabled': True, 'speedCluster': target/3.6})
   cc = structs.CarControl(enabled=True)
   sp = custom.LongitudinalPlanSP(vTarget=target/3.6)
-  plan = log.LongitudinalPlan.new_message(aTarget=-1.)
+  # aTarget -1 cannot come from a_cruise (floored at -0.5): it models a model (e2e) deceleration.
+  # The capnp default source is cruise, which caps the planner at the SP target.
+  plan = log.LongitudinalPlan.new_message(aTarget=-1., longitudinalPlanSource='e2e')
   return controller, cs, cc, sp, plan
 
 
@@ -98,7 +101,8 @@ def test_recovery_uses_existing_acceleration_and_user_target():
   tick(c, cs, cc, sp, plan)
   cs.cruiseState.speedCluster = 49/3.6
   plan.aTarget = 0.
-  assert SendButtonState.increase in tick(c, cs, cc, sp, plan, frames=250)
+  # the cluster drop acknowledges the SET: RES waits out LEAF_REVERSE_DWELL_RES_AFTER_SET (300 frames)
+  assert SendButtonState.increase in tick(c, cs, cc, sp, plan, frames=350)
   assert c.v_target <= 80
 
 
@@ -664,3 +668,247 @@ def test_non_planner_standstill_res_unchanged():
   c, cs, cc, sp, plan = _standstill(CAR.NISSAN_XTRAIL)
   buttons = tick(c, cs, cc, sp, plan, frames=300)
   assert INC in buttons
+
+
+# ---- TUNING_CONSULT.md Q5 1-3: cap quantization hysteresis, cruise-source cap floor, reverse dwell ----
+
+def _drive(c, cs, cc, sp, plan, frames, step, sp_valid=True):
+  """Closed loop with an OEM that acknowledges each press 40 ms later by one 5 km/h step (floor 30).
+
+  `step(i)` sets the vehicle/planner inputs for frame i. Returns the (frame, button) of each press and the
+  cluster (km/h) at every frame.
+  """
+  presses, clusters, pending, prev = [], [], None, NONE
+  for i in range(frames):
+    if pending is not None and i >= pending[0]:
+      kph = round(cs.cruiseState.speedCluster * 3.6) + (-5 if pending[1] == DEC else 5)
+      cs.cruiseState.speedCluster = max(30, kph) / 3.6
+      pending = None
+    step(i)
+    c.run(cs, cc, sp, True, plan, plan_valid=True)
+    clusters.append(round(cs.cruiseState.speedCluster * 3.6))
+    b = c.cruise_button
+    if b != NONE and b != prev:
+      presses.append((i, b))
+      pending = (i + 4, b)
+    prev = b
+  return presses, clusters
+
+
+def _reversals(presses):
+  return sum(a[1] != b[1] for a, b in zip(presses, presses[1:], strict=False))
+
+
+def _a_cruise(v_target, v_ego):
+  return float(min(max(v_target - v_ego, -0.5), 1.0))
+
+
+def _episode_b(source, period=4.0):
+  """vTarget 60 constant, vEgo 60 ± 1.2 km/h sine (OEM speed-hold wobble), aTarget = a_cruise."""
+  c, cs, cc, sp, plan = setup(target=60.)
+  plan.longitudinalPlanSource = source
+  w = 2 * math.pi / period
+  def step(i):
+    t = i * 0.01
+    cs.vEgo = (60 + 1.2 * math.sin(w * t)) / 3.6
+    cs.aEgo = 1.2 / 3.6 * w * math.cos(w * t)
+    plan.aTarget = _a_cruise(sp.vTarget, cs.vEgo)
+  return _drive(c, cs, cc, sp, plan, 3000, step)
+
+
+@pytest.mark.parametrize('source', ['cruise', 'e2e'])
+def test_episode_b_no_set_res_reversals(source):
+  presses, _ = _episode_b(source)
+  assert _reversals(presses) == 0
+
+
+def test_episode_b_hunts_without_hysteresis_and_dwell(monkeypatch):
+  # control: the same scenario with Q5-1 and Q5-3 disabled reproduces the SET/RES hunting
+  from openpilot.sunnypilot.selfdrive.car.intelligent_cruise_button_management import controller as ctl
+  monkeypatch.setattr(ctl, 'PLANNER_CAP_QUANT_HYST', 0.)
+  monkeypatch.setattr(ctl, 'LEAF_REVERSE_DWELL_RES_AFTER_SET_FRAMES', 0)
+  monkeypatch.setattr(ctl, 'LEAF_REVERSE_DWELL_SET_AFTER_RES_FRAMES', 0)
+  presses, _ = _episode_b('e2e')
+  assert _reversals(presses) >= 5
+
+
+def _episode_a(source, cluster=40., frames=4000):
+  """vTarget 40, vEgo 46; the OEM brakes at -0.25 m/s² toward its setting; aTarget = clip(vT - vEgo, -0.5)."""
+  c, cs, cc, sp, plan = setup(speed=46., target=cluster)
+  sp.vTarget = 40 / 3.6
+  plan.longitudinalPlanSource = source
+  def step(i):
+    setting = cs.cruiseState.speedCluster
+    cs.aEgo = -0.25 if cs.vEgo > setting + 0.05 else (0.3 if cs.vEgo < setting - 0.3 else 0.)
+    cs.vEgo += cs.aEgo * 0.01
+    plan.aTarget = _a_cruise(sp.vTarget, cs.vEgo)
+  return _drive(c, cs, cc, sp, plan, frames, step)
+
+
+@pytest.mark.parametrize('cluster', [40., 50.])
+def test_episode_a_cruise_source_stops_at_sp_target(cluster):
+  presses, clusters = _episode_a('cruise', cluster)
+  assert min(clusters) >= 40 and clusters[-1] >= 40
+  assert INC not in [b for _, b in presses]
+
+
+def test_episode_a_e2e_source_still_lowers_below_sp_target():
+  _, clusters = _episode_a('e2e')
+  assert min(clusters) < 40
+
+
+def _cap_entry(a_target, source='e2e', a_ego=0.):
+  c, cs, cc, sp, plan = setup(target=60.)
+  plan.aTarget, plan.longitudinalPlanSource, cs.aEgo = a_target, source, a_ego
+  tick(c, cs, cc, sp, plan, frames=1)
+  return c, cs, cc, sp, plan
+
+
+@pytest.mark.parametrize('a_target,source,a_ego,bypass', [
+  (-0.5, 'e2e', 0., False),
+  (-0.8, 'e2e', 0., True),    # error <= -0.8
+  (-0.5, 'e2e', 0.3, True),   # error = -0.8 from a positive aEgo
+  (-0.5, 'lead0', 0., True),
+  (-0.5, 'lead1', 0., True),
+])
+def test_cap_hysteresis_bypass(a_target, source, a_ego, bypass):
+  c, *_ = _cap_entry(a_target, source, a_ego)
+  assert c.planner_cap * 3.6 < 60  # the cap has started below the boundary
+  assert c.planner_cap_level == (55 if bypass else 60)
+  assert c.v_target == c.planner_cap_level
+
+
+def test_cap_hysteresis_steps_down_below_boundary_minus_hq_and_back_up_at_boundary():
+  c, cs, cc, sp, plan = _cap_entry(-0.5)
+  assert c.planner_cap_level == 60
+  c.planner_cap = 57.6 / 3.6
+  c.quantize_planner_cap(bypass=False)
+  assert c.planner_cap_level == 60
+  c.planner_cap = 57.5 / 3.6
+  c.quantize_planner_cap(bypass=False)
+  assert c.planner_cap_level == 55
+  c.planner_cap = 59.9 / 3.6  # recovering, still short of the boundary
+  c.quantize_planner_cap(bypass=False)
+  assert c.planner_cap_level == 55
+  c.planner_cap = 60. / 3.6
+  c.quantize_planner_cap(bypass=False)
+  assert c.planner_cap_level == 60
+
+
+def test_cap_hysteresis_delays_first_step_only_until_hq_is_integrated():
+  c, cs, cc, sp, plan = setup(target=60.)
+  plan.aTarget = -0.5  # error -0.5: cap falls at 0.5 m/s/s, 2.5 km/h takes ~1.4 s
+  buttons = tick(c, cs, cc, sp, plan, frames=200)
+  first = _first(buttons, DEC)
+  assert first is not None and 100 < first < 200
+
+
+def test_cruise_source_cap_does_not_go_below_sp_target():
+  c, cs, cc, sp, plan = setup(target=60.)
+  plan.aTarget, plan.longitudinalPlanSource = -0.5, 'cruise'
+  assert DEC not in tick(c, cs, cc, sp, plan, frames=1000)
+  assert c.planner_cap * 3.6 >= 60 - 1e-3 and c.v_target == 60
+
+
+def test_cruise_source_does_not_raise_a_cap_lowered_by_e2e():
+  c, cs, cc, sp, plan = setup(target=60.)
+  plan.aTarget = -0.5
+  tick(c, cs, cc, sp, plan, frames=200)
+  lowered = c.planner_cap
+  assert lowered * 3.6 < 57.5
+  plan.longitudinalPlanSource = 'cruise'
+  tick(c, cs, cc, sp, plan, frames=50)
+  assert c.planner_cap == pytest.approx(lowered)
+
+
+@pytest.mark.parametrize('vision_state,expected', [('entering', 35), ('turning', 35), ('enabled', 40), ('leaving', 40)])
+def test_cruise_source_scc_vision_curve_allows_one_extra_step(vision_state, expected):
+  c, cs, cc, sp, plan = setup(target=40.)
+  sp.longitudinalPlanSource = 'sccVision'
+  sp.smartCruiseControl.vision.state = vision_state
+  plan.aTarget, plan.longitudinalPlanSource = -0.5, 'cruise'
+  presses, clusters = _drive(c, cs, cc, sp, plan, 1500, lambda i: None)
+  assert clusters[-1] == expected  # one step at most, never a ratchet to 30
+  assert c.v_target == expected
+
+
+def _acked(direction, frames=400, change=None, cs_sp=None):
+  """Acknowledge a SP-target-driven press of `direction`; then apply `change` and return the following buttons."""
+  if direction == DEC:
+    c, cs, cc, sp, plan = setup(target=60.)
+    sp.vTarget = 55 / 3.6
+  else:
+    c, cs, cc, sp, plan = setup(target=55.)
+    sp.vTarget = 60 / 3.6
+  plan.aTarget = 0.
+  for _ in range(400):
+    c.run(cs, cc, sp, True, plan, plan_valid=True)
+    if c.leaf_pending is not None:
+      break
+  assert c.leaf_pending is not None and c.leaf_pending[2] == direction
+  cs.cruiseState.speedCluster = (55 if direction == DEC else 60) / 3.6
+  c.run(cs, cc, sp, True, plan, plan_valid=True)  # ack frame
+  assert c.leaf_last_ack == (direction, c.leaf_frame)
+  if change is not None:
+    change(cs, sp, plan)
+  return c, tick(c, cs, cc, sp, plan, frames=frames)
+
+
+def _go(v_target):
+  def change(cs, sp, plan):
+    sp.vTarget = v_target / 3.6
+  return change
+
+
+def test_res_waits_reverse_dwell_after_set():
+  # without the dwell the RES would come at settle + confirm (200 frames); the dwell runs in parallel, not after
+  c, buttons = _acked(DEC, change=_go(65.))
+  assert _first(buttons, INC) == LEAF_REVERSE_DWELL_RES_AFTER_SET_FRAMES - 1
+  assert all(b == NONE for b in buttons[:LEAF_REVERSE_DWELL_RES_AFTER_SET_FRAMES - 1])
+
+
+def test_res_after_set_dwell_has_no_bypass():
+  def change(cs, sp, plan):
+    sp.vTarget = 65 / 3.6
+    plan.longitudinalPlanSource = 'lead0'
+  c, buttons = _acked(DEC, change=change)
+  assert _first(buttons, INC) == LEAF_REVERSE_DWELL_RES_AFTER_SET_FRAMES - 1
+
+
+def test_set_waits_reverse_dwell_after_res():
+  c, buttons = _acked(INC, change=_go(50.))
+  assert _first(buttons, DEC) == LEAF_REVERSE_DWELL_SET_AFTER_RES_FRAMES - 1
+
+
+def _bypass(kind):
+  def change(cs, sp, plan):
+    sp.vTarget = 50 / 3.6
+    if kind == 'strong':
+      plan.aTarget = -0.8
+    elif kind in ('lead0', 'lead1'):
+      plan.longitudinalPlanSource = kind
+    elif kind in ('entering', 'turning', 'enabled'):
+      sp.longitudinalPlanSource = 'sccVision'
+      sp.smartCruiseControl.vision.state = kind
+    elif kind == 'mild':
+      plan.aTarget = -0.79
+  return change
+
+
+@pytest.mark.parametrize('kind,bypassed', [
+  ('strong', True), ('lead0', True), ('lead1', True), ('entering', True), ('turning', True),
+  ('enabled', False), ('mild', False),
+])
+def test_set_after_res_dwell_bypass(kind, bypassed):
+  c, buttons = _acked(INC, change=_bypass(kind))
+  expected = LEAF_SETTLE_FRAMES - 1 if bypassed else LEAF_REVERSE_DWELL_SET_AFTER_RES_FRAMES - 1
+  assert _first(buttons, DEC) == expected
+
+
+@pytest.mark.parametrize('direction,v_target,expected', [
+  (DEC, 50., LEAF_SETTLE_FRAMES - 1),
+  (INC, 65., LEAF_SETTLE_FRAMES + LEAF_INCREASE_CONFIRM_FRAMES - 1),
+])
+def test_reverse_dwell_does_not_affect_same_direction(direction, v_target, expected):
+  c, buttons = _acked(direction, change=_go(v_target))
+  assert _first(buttons, direction) == expected

@@ -31,9 +31,13 @@ PLANNER_MAX_LOWER_RATE = 2.0  # m/s of set speed per second
 PLANNER_RECOVERY_RATE = 0.5  # m/s of set speed per second
 PLANNER_ACCEL_DEADBAND = 0.15  # m/s²
 PLANNER_MAX_PENDING_DROP = 5.0 / 3.6  # one observed Leaf OEM step
+PLANNER_CAP_QUANT_HYST = 2.5 / 3.6  # the cap must fall this far below a 5 km/h boundary to step down
+PLANNER_STRONG_DECEL = -0.8  # m/s²; strong demand bypasses the cap hysteresis and the SET-after-RES dwell
 LEAF_BUTTON_TIMEOUT = 0.3  # s; stop requesting if no acknowledgement
 LEAF_SETTLE_TIME = 1.0  # s; observe vehicle response after a button request
 LEAF_INCREASE_CONFIRM = 1.0  # s; avoid reversing for a transient higher target
+LEAF_REVERSE_DWELL_RES_AFTER_SET = 3.0  # s after an acknowledged SET before a RES
+LEAF_REVERSE_DWELL_SET_AFTER_RES = 2.0  # s after an acknowledged RES before a SET (bypassable)
 # 0x2B0 T early release. All values are first-guess calibration values, to be tuned from logs.
 LEAF_T_MIN_SETTLE = 0.3  # s after the acknowledgement before an early release is possible
 LEAF_T_CONFIRM_DELTA = 30  # counts of T movement beyond the pre-acknowledgement trend
@@ -56,6 +60,17 @@ LEAF_INCREASE_CONFIRM_FRAMES = _frames(LEAF_INCREASE_CONFIRM)
 LEAF_T_MIN_SETTLE_FRAMES = _frames(LEAF_T_MIN_SETTLE)
 LEAF_T_TREND_FRAMES = _frames(LEAF_T_TREND_WINDOW)
 LEAF_T_CONFIRM_HOLD_FRAMES = _frames(LEAF_T_CONFIRM_HOLD)
+LEAF_REVERSE_DWELL_RES_AFTER_SET_FRAMES = _frames(LEAF_REVERSE_DWELL_RES_AFTER_SET)
+LEAF_REVERSE_DWELL_SET_AFTER_RES_FRAMES = _frames(LEAF_REVERSE_DWELL_SET_AFTER_RES)
+
+PlanSource = log.LongitudinalPlan.LongitudinalPlanSource
+VisionState = custom.LongitudinalPlanSP.SmartCruiseControl.VisionState
+LEAD_SOURCES = (PlanSource.lead0, PlanSource.lead1)
+VISION_DECEL_STATES = (VisionState.entering, VisionState.turning)
+
+
+def _floor5(kph: float) -> int:
+  return 5 * math.floor((kph + 1e-4) / 5)
 
 
 SEND_BUTTONS = {
@@ -126,7 +141,10 @@ class IntelligentCruiseButtonManagement:
 
     self.cruise_button_timers = CRUISE_BUTTON_TIMER.copy()
     self.planner_cap = None
+    self.planner_cap_level: int | None = None  # km/h; hysteretic 5 km/h quantization of planner_cap
     self.planner_decelerating = False
+    self.leaf_reverse_bypass = False  # strong/lead/curve deceleration: SET may follow RES without the dwell
+    self.leaf_last_ack = None  # (direction, frame) of the last acknowledged press
     self.leaf_frame = 0
     self.leaf_pending = None
     self.leaf_settle_until = 0
@@ -146,9 +164,16 @@ class IntelligentCruiseButtonManagement:
     ms_conv = CV.KPH_TO_MS if self.is_metric else CV.MPH_TO_MS
 
     target = LP_SP.vTarget
+    self.leaf_reverse_bypass = False
     if self.use_planner and plan is not None:
       minimum = get_minimum_set_speed(self.is_metric) * ms_conv
       cluster = CS.cruiseState.speedCluster
+      step = PLANNER_MAX_PENDING_DROP if self.is_metric else 2.0 / 3.6
+      error = plan.aTarget - CS.aEgo
+      lead = plan.longitudinalPlanSource in LEAD_SOURCES
+      vision_decel = (LP_SP.longitudinalPlanSource == LongitudinalPlanSource.sccVision and
+                      LP_SP.smartCruiseControl.vision.state in VISION_DECEL_STATES)
+      self.leaf_reverse_bypass = plan.aTarget <= PLANNER_STRONG_DECEL or lead or vision_decel
       if plan.aTarget <= PLANNER_DECEL_THRESHOLD:
         self.planner_decelerating = True
       elif plan.aTarget >= PLANNER_RELEASE_THRESHOLD:
@@ -156,12 +181,18 @@ class IntelligentCruiseButtonManagement:
       if self.planner_decelerating:
         if self.planner_cap is None:
           self.planner_cap = max(minimum, min(target, cluster))
-        error = plan.aTarget - CS.aEgo
         if error < -PLANNER_ACCEL_DEADBAND:
-          self.planner_cap -= min(-error * PLANNER_GAIN, PLANNER_MAX_LOWER_RATE) * DT_CTRL
+          lowered = self.planner_cap - min(-error * PLANNER_GAIN, PLANNER_MAX_LOWER_RATE) * DT_CTRL
+          if plan.longitudinalPlanSource == PlanSource.cruise:
+            # a_cruise only means "approach vTarget", which the SP target already requests: lowering the cap
+            # below it would count that demand twice. A curve being entered may still take one extra step.
+            floor = _floor5(target * speed_conv) * ms_conv if self.is_metric else target
+            if vision_decel:
+              floor -= step
+            lowered = max(lowered, min(self.planner_cap, floor))  # never lower below it; never raise to it
+          self.planner_cap = lowered
           # Wait for the OEM setpoint to respond before asking for more.
-          pending_drop = PLANNER_MAX_PENDING_DROP if self.is_metric else 2.0 / 3.6
-          self.planner_cap = max(self.planner_cap, cluster - pending_drop)
+          self.planner_cap = max(self.planner_cap, cluster - step)
         else:
           # Already braking enough: cancel any remaining downward target.
           self.planner_cap = max(self.planner_cap, cluster)
@@ -174,13 +205,37 @@ class IntelligentCruiseButtonManagement:
       if self.planner_cap is not None:
         self.planner_cap = max(minimum, self.planner_cap)
         target = min(target, self.planner_cap)
+      if self.planner_cap is not None and self.is_metric:
+        self.quantize_planner_cap(bypass=error <= PLANNER_STRONG_DECEL or lead)
+      else:
+        self.planner_cap_level = None
     self.v_target_ms_last = apply_hysteresis(target, self.v_target_ms_last, HYST_GAP * ms_conv)
 
     self.v_target = round(self.v_target_ms_last * speed_conv)
     self.v_cruise_min = get_minimum_set_speed(self.is_metric)
     if self.use_planner and self.is_metric:
-      self.v_target = max(self.v_cruise_min, 5 * math.floor((self.v_target_ms_last * speed_conv + 1e-4) / 5))
+      # SP target: plain 5 km/h floor. Planner cap: hysteretic level (quantize_planner_cap).
+      level = _floor5(LP_SP.vTarget * speed_conv)
+      if self.planner_cap_level is not None:
+        level = min(level, self.planner_cap_level)
+      self.v_target = max(self.v_cruise_min, level)
     self.v_cruise_cluster = round(CS.cruiseState.speedCluster * speed_conv)
+
+  def quantize_planner_cap(self, bypass: bool) -> None:
+    """5 km/h level for planner_cap: stepping down needs the cap PLANNER_CAP_QUANT_HYST below the boundary
+    (unless bypassed); stepping back up only needs it back at the boundary."""
+    cap = self.planner_cap * CV.MS_TO_KPH
+    up = _floor5(cap)
+    # highest level L with cap <= (L + 5) - Hq, i.e. inclusive at "boundary - Hq" (within 1e-4 km/h)
+    down = up if bypass else 5 * math.ceil((cap + PLANNER_CAP_QUANT_HYST * CV.MS_TO_KPH - 1e-4) / 5) - 5
+    level = self.planner_cap_level
+    if level is None:
+      # New cap (initialized and already lowered once this frame): enter as if from the boundary above it.
+      self.planner_cap_level = down
+    elif up > level:
+      self.planner_cap_level = up
+    elif down < level:
+      self.planner_cap_level = down
 
   def update_state_machine(self) -> custom.IntelligentCruiseButtonManagement.SendButtonState:
     self.pre_active_timer = max(0, self.pre_active_timer - 1)
@@ -281,6 +336,8 @@ class IntelligentCruiseButtonManagement:
         # Only a move in the requested direction acknowledges the press; anything else gets the full settle.
         acked = moved < 0 if requested == SendButtonState.decrease else moved > 0
         self.leaf_t_ref = self.leaf_t_reference(requested, now) if acked else None
+        if acked:
+          self.leaf_last_ack = (requested, now)
         return SendButtonState.none
       # A changed target must not finish an obsolete/opposite press.
       if button == SendButtonState.none or button != requested:
@@ -301,9 +358,23 @@ class IntelligentCruiseButtonManagement:
         return SendButtonState.none
     else:
       self.leaf_increase_since = None
+    # Checked last, so the dwell runs from the acknowledgement in parallel with settle and RES confirm.
+    if self.leaf_reverse_dwell(button, now):
+      return SendButtonState.none
     if button != SendButtonState.none:
       self.leaf_pending = (self.v_cruise_cluster, now, button)
     return button
+
+  def leaf_reverse_dwell(self, button, now: int) -> bool:
+    """True while a press opposite to the last acknowledged one must wait; same-direction presses never do."""
+    if self.leaf_last_ack is None or button == SendButtonState.none:
+      return False
+    last, frame = self.leaf_last_ack
+    if button == last:
+      return False
+    if button == SendButtonState.increase:
+      return now - frame < LEAF_REVERSE_DWELL_RES_AFTER_SET_FRAMES
+    return now - frame < LEAF_REVERSE_DWELL_SET_AFTER_RES_FRAMES and not self.leaf_reverse_bypass
 
   def update_readiness(self, CS: car.CarState, CC: car.CarControl) -> None:
     update_manual_button_timers(CS, self.cruise_button_timers)
@@ -331,7 +402,7 @@ class IntelligentCruiseButtonManagement:
                         math.isfinite(CS.cruiseState.speedCluster) and
                         not CS.brakePressed and not CS.gasPressed and CS.cruiseState.enabled)
     if self.use_planner and not self.is_ready:
-      self.planner_cap = None
+      self.planner_cap = self.planner_cap_level = None
       self.planner_decelerating = False
     if not self.use_planner or self.is_ready:
       self.update_calculations(CS, LP_SP, plan)
