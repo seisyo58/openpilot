@@ -7,12 +7,18 @@ See the LICENSE.md file in the root directory for more details.
 
 from collections import namedtuple
 from opendbc.car import structs
+from opendbc.car.nissan.values import CAR
 
 
 class NissanSafetyFlagsSP:
   DEFAULT = 0
   LEAF = 1
   PPP_INTERLOCK = 2  # experimental: NISSAN_LEAF_IC only
+
+
+def leaf_stock_long(CP) -> bool:
+  """Leaf on stock (OEM ICC) longitudinal: scope of the planner ICBM and the 0x2B0 T feedback."""
+  return CP.carFingerprint in (CAR.NISSAN_LEAF, CAR.NISSAN_LEAF_IC) and not CP.openpilotLongitudinalControl
 
 
 ButtonType = structs.CarState.ButtonEvent.Type

@@ -7,7 +7,7 @@ import openpilot.cereal.messaging as messaging
 
 from openpilot.cereal import log, custom
 from opendbc.car.structs import car
-from opendbc.car.nissan.values import CAR as NISSAN
+from opendbc.sunnypilot.car.nissan.values import leaf_stock_long
 from openpilot.cereal.visionipc import VisionStreamType
 from msgq.visionipc import VisionIpcClient
 
@@ -32,7 +32,7 @@ from openpilot.sunnypilot.selfdrive.selfdrived.parking import apply_parking_inte
 from openpilot.sunnypilot import get_sanitize_int_param
 from openpilot.sunnypilot.selfdrive.car.car_specific import CarSpecificEventsSP
 from openpilot.sunnypilot.selfdrive.car.intelligent_cruise_button_management.controller import (
-  IntelligentCruiseButtonManagement, planner_data_valid,
+  IntelligentCruiseButtonManagement, car_state_sp_valid, planner_data_valid,
 )
 from openpilot.sunnypilot.selfdrive.selfdrived.button_state_tracker import ButtonStateTracker
 from openpilot.sunnypilot.selfdrive.selfdrived.events import EventsSP
@@ -107,14 +107,14 @@ class SelfdriveD:
     if REPLAY:
       # no vipc in replay will make them ignored anyways
       ignore += ['narrowRoadCameraState', 'wideRoadCameraState']
+    # carStateSP: Nissan parking interlock, and the Leaf stock-long ICBM 0x2B0 T feedback
+    self.car_state_sp_subscribed = parking_interlock_enabled(self.CP, self.CP_SP) or leaf_stock_long(self.CP)
     self.sm = messaging.SubMaster(['deviceState', 'pandaStates', 'peripheralState', 'modelV2', 'extrinsicsCalibration',
                                    'carOutput', 'driverMonitoringState', 'longitudinalPlan', 'deviceMotion', 'lateralDelay',
                                    'managerState', 'vehicleParameters', 'radarState', 'lateralTorqueParameters',
                                    'controlsState', 'carControl', 'driverAssistance', 'alertDebug', 'userBookmark',
                                    'lateralManeuverPlan', 'modelDataV2SP', 'longitudinalPlanSP'] + \
-                                   (['carStateSP'] if (parking_interlock_enabled(self.CP, self.CP_SP) or
-                                                       self.CP.carFingerprint in (NISSAN.NISSAN_LEAF, NISSAN.NISSAN_LEAF_IC) and
-                                                       not self.CP.openpilotLongitudinalControl) else []) + \
+                                   (['carStateSP'] if self.car_state_sp_subscribed else []) + \
                                    self.camera_packets + self.sensor_packets + self.gps_packets,
                                   ignore_alive=ignore, ignore_avg_freq=ignore,
                                   ignore_valid=ignore, frequency=int(1/DT_CTRL))
@@ -182,10 +182,6 @@ class SelfdriveD:
 
     self.mads = ModularAssistiveDrivingSystem(self)
     self.icbm = IntelligentCruiseButtonManagement(self.CP, self.CP_SP)
-
-    self.car_state_sp_subscribed = (parking_interlock_enabled(self.CP, self.CP_SP) or
-                                    self.CP.carFingerprint in (NISSAN.NISSAN_LEAF, NISSAN.NISSAN_LEAF_IC) and
-                                    not self.CP.openpilotLongitudinalControl)
 
     self.car_events_sp = CarSpecificEventsSP(self.CP, self.CP_SP)
 
@@ -529,9 +525,11 @@ class SelfdriveD:
         self.params.put('LongitudinalPersonality', self.personality)
         self.events.add(EventName.personalityChanged)
 
+    now = time.monotonic()
+    cs_sp_fresh = self.car_state_sp_subscribed and car_state_sp_valid(self.sm, now)
     self.icbm.run(CS, self.sm['carControl'], self.sm['longitudinalPlanSP'], self.is_metric,
-                  self.sm['longitudinalPlan'], plan_valid=planner_data_valid(self.sm, time.monotonic()),
-                  CS_SP=self.sm['carStateSP'] if self.car_state_sp_subscribed else None)
+                  self.sm['longitudinalPlan'], plan_valid=planner_data_valid(self.sm, now),
+                  CS_SP=self.sm['carStateSP'] if cs_sp_fresh else None)
 
   def data_sample(self):
     _car_state = messaging.recv_one(self.car_state_sock)

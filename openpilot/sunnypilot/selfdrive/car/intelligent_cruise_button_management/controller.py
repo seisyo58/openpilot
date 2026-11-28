@@ -7,11 +7,14 @@ See the LICENSE.md file in the root directory for more details.
 from __future__ import annotations
 
 import math
+from collections import deque
+from dataclasses import dataclass
+from statistics import median
 
 from openpilot.cereal import custom, log
 from opendbc.car.structs import car
 from opendbc.car import DT_CTRL, structs, apply_hysteresis
-from opendbc.car.nissan.values import CAR as NISSAN
+from opendbc.sunnypilot.car.nissan.values import leaf_stock_long
 from openpilot.common.constants import CV
 from openpilot.sunnypilot.selfdrive.car.intelligent_cruise_button_management.helpers import get_minimum_set_speed
 from openpilot.sunnypilot.selfdrive.car.cruise_buttons import CRUISE_BUTTON_TIMER, update_manual_button_timers
@@ -31,11 +34,28 @@ PLANNER_MAX_PENDING_DROP = 5.0 / 3.6  # one observed Leaf OEM step
 LEAF_BUTTON_TIMEOUT = 0.3  # s; stop requesting if no acknowledgement
 LEAF_SETTLE_TIME = 1.0  # s; observe vehicle response after a button request
 LEAF_INCREASE_CONFIRM = 1.0  # s; avoid reversing for a transient higher target
-LEAF_T_MIN_SETTLE = 0.3  # s; first-guess calibration value, to be tuned from logs
-LEAF_T_CONFIRM_DELTA = 30  # counts; first-guess calibration value, to be tuned from logs
+# 0x2B0 T early release. All values are first-guess calibration values, to be tuned from logs.
+LEAF_T_MIN_SETTLE = 0.3  # s after the acknowledgement before an early release is possible
+LEAF_T_CONFIRM_DELTA = 30  # counts of T movement beyond the pre-acknowledgement trend
+LEAF_T_TREND_WINDOW = 0.3  # s of continuously valid T before the acknowledgement; fits the trend
+LEAF_T_CONFIRM_HOLD = 0.05  # s the response must persist without interruption
 PLANNER_RELEASE_THRESHOLD = -0.1  # hysteresis after entering at -0.3
 PLANNER_DECEL_THRESHOLD = -0.3  # m/s²; ignore very small deceleration requests
 PLAN_MAX_AGE = 0.25  # s
+CAR_STATE_SP_MAX_AGE = 0.05  # s; published with every carState (100 Hz)
+
+
+def _frames(seconds: float) -> int:
+  return round(seconds / DT_CTRL)
+
+
+# Leaf pacing runs on integer frame counts (one per run() call), not accumulated float time.
+LEAF_BUTTON_TIMEOUT_FRAMES = _frames(LEAF_BUTTON_TIMEOUT)
+LEAF_SETTLE_FRAMES = _frames(LEAF_SETTLE_TIME)
+LEAF_INCREASE_CONFIRM_FRAMES = _frames(LEAF_INCREASE_CONFIRM)
+LEAF_T_MIN_SETTLE_FRAMES = _frames(LEAF_T_MIN_SETTLE)
+LEAF_T_TREND_FRAMES = _frames(LEAF_T_TREND_WINDOW)
+LEAF_T_CONFIRM_HOLD_FRAMES = _frames(LEAF_T_CONFIRM_HOLD)
 
 
 SEND_BUTTONS = {
@@ -49,6 +69,42 @@ def planner_data_valid(sm, now: float) -> bool:
   stamps = [sm.logMonoTime[s] * 1e-9 for s in services]
   stamps.append(sm['longitudinalPlan'].modelMonoTime * 1e-9)
   return sm.all_checks(service_list=list(services)) and all(-1e-6 <= now - stamp <= PLAN_MAX_AGE for stamp in stamps)
+
+
+def car_state_sp_valid(sm, now: float) -> bool:
+  stamp = sm.logMonoTime['carStateSP'] * 1e-9
+  return sm.all_checks(service_list=['carStateSP']) and -1e-6 <= now - stamp <= CAR_STATE_SP_MAX_AGE
+
+
+def _trend(values) -> tuple[float, float]:
+  """Theil-Sen line through equally spaced samples: (slope per sample, fitted value at the last sample).
+
+  Median-based, so a step (e.g. the plateau of the previous press's response) occupying a minority of
+  the window is not mistaken for a ramp, while a steady ramp is recovered exactly.
+  """
+  values = list(values)
+  n = len(values)
+  slope = median((values[j] - values[i]) / (j - i) for i in range(n) for j in range(i + 1, n))
+  intercept = median(v - slope * i for i, v in enumerate(values))
+  return slope, intercept + slope * (n - 1)
+
+
+@dataclass
+class LeafTReference:
+  """T state captured when the OEM acknowledged a press, in press-direction terms.
+
+  sign is +1 for a decrease press (T expected to rise) and -1 for an increase press (T expected
+  to fall). drift is the pre-acknowledgement trend in the expected direction (counts/frame,
+  never negative), so movement that was already under way before the press is not credited to it.
+  """
+  t0: float
+  sign: int
+  drift: float
+  ack_frame: int
+  hits: int = 0
+
+  def response(self, t: int, frame: int) -> float:
+    return self.sign * (t - self.t0) - self.drift * (frame - self.ack_frame)
 
 
 class IntelligentCruiseButtonManagement:
@@ -71,13 +127,14 @@ class IntelligentCruiseButtonManagement:
     self.cruise_button_timers = CRUISE_BUTTON_TIMER.copy()
     self.planner_cap = None
     self.planner_decelerating = False
-    self.leaf_time = 0.0
+    self.leaf_frame = 0
     self.leaf_pending = None
-    self.leaf_settle_until = 0.0
+    self.leaf_settle_until = 0
     self.leaf_increase_since = None
     self.leaf_t = 0
-    self.leaf_t_ref = None
-    self.use_planner = CP.carFingerprint in (NISSAN.NISSAN_LEAF, NISSAN.NISSAN_LEAF_IC) and not CP.openpilotLongitudinalControl
+    self.leaf_t_history: deque[int] = deque(maxlen=LEAF_T_TREND_FRAMES)
+    self.leaf_t_ref: LeafTReference | None = None
+    self.use_planner = leaf_stock_long(CP)
 
   @property
   def v_cruise_equal(self) -> bool:
@@ -171,56 +228,76 @@ class IntelligentCruiseButtonManagement:
 
     return send_button
 
+  def update_leaf_t(self, CS_SP) -> None:
+    """Latch the 0x2B0 T for this frame; 0 (CS_SP missing/stale, or T <= 0) means invalid."""
+    t = int(CS_SP.leafAdasRequestT) if CS_SP is not None else 0
+    self.leaf_t = max(t, 0)
+    if self.leaf_t > 0:
+      self.leaf_t_history.append(self.leaf_t)
+    else:
+      self.leaf_t_history.clear()  # the trend window must be continuously valid
+
+  def leaf_t_reference(self, requested, now: int) -> LeafTReference | None:
+    """Reference for an acknowledged press, or None (full settle) unless T was valid for the whole trend window."""
+    history = self.leaf_t_history
+    if len(history) < LEAF_T_TREND_FRAMES:
+      return None
+    sign = 1 if requested == SendButtonState.decrease else -1
+    slope, fitted = _trend(history)  # pre-acknowledgement trend line, evaluated at this frame
+    # Both choices can only make confirmation harder: the directionally higher of measured and fitted T,
+    # and only a trend already moving in the expected direction is subtracted (an opposite trend is not credited).
+    t0 = sign * max(sign * self.leaf_t, sign * fitted)
+    return LeafTReference(t0=t0, sign=sign, drift=max(0.0, sign * slope), ack_frame=now)
+
+  def leaf_t_confirmed(self, now: int) -> bool:
+    """True once T has responded to the acknowledged press beyond its pre-press trend."""
+    ref = self.leaf_t_ref
+    if ref is None:
+      return False
+    if self.leaf_t <= 0:
+      self.leaf_t_ref = None  # T lost mid-settle: this settle can no longer release early
+      return False
+    ref.hits = ref.hits + 1 if ref.response(self.leaf_t, now) >= LEAF_T_CONFIRM_DELTA else 0
+    return now - ref.ack_frame >= LEAF_T_MIN_SETTLE_FRAMES and ref.hits >= LEAF_T_CONFIRM_HOLD_FRAMES
+
   def pace_leaf_button(self, button):
     """Wait for OEM acknowledgement and settling; never chase intermediate speeds."""
-    now = self.leaf_time
+    now = self.leaf_frame
     if self.planner_decelerating and button == SendButtonState.increase:
       button = SendButtonState.none
       self.leaf_increase_since = None
     if not self.is_ready:
       self.leaf_pending = self.leaf_increase_since = None
-      self.leaf_settle_until = now + LEAF_SETTLE_TIME
+      self.leaf_settle_until = now + LEAF_SETTLE_FRAMES
       self.leaf_t_ref = None
       return SendButtonState.none
     if self.leaf_pending is not None:
       setting, started, requested = self.leaf_pending
-      if self.v_cruise_cluster != setting or now - started >= LEAF_BUTTON_TIMEOUT:
+      moved = self.v_cruise_cluster - setting
+      if moved != 0 or now - started >= LEAF_BUTTON_TIMEOUT_FRAMES:
         self.leaf_pending = None
-        self.leaf_settle_until = now + LEAF_SETTLE_TIME
+        self.leaf_settle_until = now + LEAF_SETTLE_FRAMES
         self.leaf_increase_since = None
-        if self.v_cruise_cluster != setting:
-          self.leaf_t_ref = (self.leaf_t, requested, now)
-        else:
-          self.leaf_t_ref = None
+        # Only a move in the requested direction acknowledges the press; anything else gets the full settle.
+        acked = moved < 0 if requested == SendButtonState.decrease else moved > 0
+        self.leaf_t_ref = self.leaf_t_reference(requested, now) if acked else None
         return SendButtonState.none
       # A changed target must not finish an obsolete/opposite press.
       if button == SendButtonState.none or button != requested:
         self.leaf_pending = None
-        self.leaf_settle_until = now + LEAF_SETTLE_TIME
+        self.leaf_settle_until = now + LEAF_SETTLE_FRAMES
         self.leaf_t_ref = None
         return SendButtonState.none
       return button
     if now < self.leaf_settle_until:
-      if self.leaf_t > 0 and self.leaf_t_ref is not None:
-        ref_t, ref_dir, ack_time = self.leaf_t_ref
-        if now - ack_time >= LEAF_T_MIN_SETTLE:
-          if ref_dir == SendButtonState.decrease:
-            confirmed = self.leaf_t >= ref_t + LEAF_T_CONFIRM_DELTA
-          else:
-            confirmed = self.leaf_t <= ref_t - LEAF_T_CONFIRM_DELTA
-          if confirmed:
-            self.leaf_settle_until = now
-            self.leaf_t_ref = None
-          else:
-            return SendButtonState.none
-        else:
-          return SendButtonState.none
-      else:
+      if not self.leaf_t_confirmed(now):
         return SendButtonState.none
+      self.leaf_settle_until = now  # T confirmed the acknowledged press: release early
+    self.leaf_t_ref = None  # settle over, whether released early or expired
     if button == SendButtonState.increase:
       if self.leaf_increase_since is None:
         self.leaf_increase_since = now
-      if now - self.leaf_increase_since < LEAF_INCREASE_CONFIRM:
+      if now - self.leaf_increase_since < LEAF_INCREASE_CONFIRM_FRAMES:
         return SendButtonState.none
     else:
       self.leaf_increase_since = None
@@ -242,8 +319,9 @@ class IntelligentCruiseButtonManagement:
       return
 
     self.is_metric = is_metric
-    self.leaf_time += DT_CTRL
-    self.leaf_t = int(CS_SP.leafAdasRequestT) if CS_SP is not None else 0
+    self.leaf_frame += 1
+    if self.use_planner:
+      self.update_leaf_t(CS_SP)
 
     self.update_readiness(CS, CC)
     if self.use_planner:
@@ -264,5 +342,8 @@ class IntelligentCruiseButtonManagement:
     elif CS.standstill:
       self.leaf_pending = self.leaf_increase_since = None
       self.leaf_t_ref = None
+    # Planner mode only: no ICBM-initiated RES at standstill (on the Leaf, RES while held launches).
+    if self.use_planner and CS.standstill and self.cruise_button == SendButtonState.increase:
+      self.cruise_button = SendButtonState.none
 
     self.is_ready_prev = self.is_ready

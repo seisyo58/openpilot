@@ -7,7 +7,8 @@ from opendbc.car import structs
 from opendbc.car.nissan.values import CAR
 from openpilot.cereal import custom, log
 from openpilot.sunnypilot.selfdrive.car.intelligent_cruise_button_management.controller import (
-  IntelligentCruiseButtonManagement, SendButtonState, planner_data_valid,
+  IntelligentCruiseButtonManagement, LeafTReference, SendButtonState, car_state_sp_valid, planner_data_valid,
+  LEAF_INCREASE_CONFIRM_FRAMES, LEAF_SETTLE_FRAMES, LEAF_T_CONFIRM_DELTA, LEAF_T_MIN_SETTLE_FRAMES, LEAF_T_TREND_FRAMES,
 )
 
 
@@ -301,7 +302,7 @@ def test_new_deceleration_cancels_pending_increase():
   c.is_ready = True
   c.planner_decelerating = True
   c.v_cruise_cluster = 55
-  c.leaf_pending = (55, c.leaf_time, SendButtonState.increase)
+  c.leaf_pending = (55, c.leaf_frame, SendButtonState.increase)
   assert c.pace_leaf_button(SendButtonState.increase) == SendButtonState.none
   assert c.leaf_pending is None
 
@@ -360,3 +361,306 @@ def test_t_moving_opposite_direction_does_not_release_early():
     c.run(cs, cc, sp, True, plan, plan_valid=True, CS_SP=cs_sp)
     buttons.append(c.cruise_button)
   assert SendButtonState.decrease not in buttons[:80]
+
+
+# ---- T-feedback hardening (FIXES.md items 2-4, 7, 8, 10) ----
+
+DEC, INC, NONE = SendButtonState.decrease, SendButtonState.increase, SendButtonState.none
+
+
+def _first(buttons, button):
+  return next((i for i, b in enumerate(buttons) if b == button), None)
+
+
+def _pending_press(direction, t=2500):
+  """Leaf with a press of `direction` in flight; T has been valid and flat at `t` the whole time."""
+  if direction == DEC:
+    c, cs, cc, sp, plan = setup(target=60.)
+    sp.vTarget = 45 / 3.6
+  else:
+    c, cs, cc, sp, plan = setup(target=55.)
+    plan.aTarget = 0.
+    sp.vTarget = 65 / 3.6
+  cs_sp = custom.CarStateSP(leafAdasRequestT=t)
+  for _ in range(300):
+    c.run(cs, cc, sp, True, plan, plan_valid=True, CS_SP=cs_sp)
+    if c.leaf_pending is not None:
+      break
+  assert c.leaf_pending is not None and c.leaf_pending[2] == direction
+  return c, cs, cc, sp, plan, cs_sp
+
+
+def _after_ack(env, t_after, frames=250, moved=None, hook=None):
+  """Move the cluster one step in the requested direction (or by `moved`); frame 0 is the ack frame."""
+  c, cs, cc, sp, plan, cs_sp = env
+  setting, _, requested = c.leaf_pending
+  cs.cruiseState.speedCluster = (setting + (moved if moved is not None else (-5 if requested == DEC else 5))) / 3.6
+  buttons = []
+  for i in range(frames):
+    cs_sp.leafAdasRequestT = t_after(i)
+    if hook is not None:
+      hook(i)
+    c.run(cs, cc, sp, True, plan, plan_valid=True, CS_SP=cs_sp)
+    buttons.append(c.cruise_button)
+  return buttons
+
+
+def _full_settle(direction):
+  """Frame (after the ack) of the next press with the legacy fixed settle; an increase also waits the RES confirm."""
+  return LEAF_SETTLE_FRAMES + (LEAF_INCREASE_CONFIRM_FRAMES if direction == INC else 0)
+
+
+def _early(direction):
+  return LEAF_T_MIN_SETTLE_FRAMES + (LEAF_INCREASE_CONFIRM_FRAMES if direction == INC else 0)
+
+
+def _expected_move(direction, counts):
+  """T moved by `counts` in the direction the press should cause (decrease: T rises; increase: T falls)."""
+  return counts if direction == DEC else -counts
+
+
+@pytest.mark.parametrize('direction', [DEC, INC])
+def test_t_response_releases_early_in_both_directions(direction):
+  env = _pending_press(direction)
+  buttons = _after_ack(env, lambda i: 2500 + (_expected_move(direction, 40) if i > 0 else 0))
+  assert _first(buttons, direction) == _early(direction)
+
+
+@pytest.mark.parametrize('direction', [DEC, INC])
+def test_t_response_in_wrong_direction_keeps_full_settle(direction):
+  env = _pending_press(direction)
+  buttons = _after_ack(env, lambda i: 2500 - (_expected_move(direction, 80) if i > 0 else 0))
+  assert _first(buttons, direction) == _full_settle(direction)
+
+
+@pytest.mark.parametrize('direction', [DEC, INC])
+@pytest.mark.parametrize('counts,early', [(LEAF_T_CONFIRM_DELTA - 1, False), (LEAF_T_CONFIRM_DELTA, True)])
+def test_t_confirmation_boundary(direction, counts, early):
+  env = _pending_press(direction)
+  buttons = _after_ack(env, lambda i: 2500 + (_expected_move(direction, counts) if i > 0 else 0))
+  assert _first(buttons, direction) == (_early(direction) if early else _full_settle(direction))
+
+
+def test_t_zero_at_ack_then_valid_keeps_full_settle():
+  # S1: the reference must not come from an invalid T (it used to confirm against ref 0)
+  env = _pending_press(DEC)
+  buttons = _after_ack(env, lambda i: 0 if i == 0 else 2595)
+  assert _first(buttons, DEC) == _full_settle(DEC)
+  env = _pending_press(DEC)
+  buttons = _after_ack(env, lambda i: 0 if i == 0 else 2560)  # real-looking response after an invalid ack frame
+  assert _first(buttons, DEC) == _full_settle(DEC)
+
+
+def test_t_never_valid_before_ack_keeps_full_settle():
+  env = _pending_press(DEC, t=0)
+  buttons = _after_ack(env, lambda i: 0 if i == 0 else 2595)
+  assert _first(buttons, DEC) == _full_settle(DEC)
+
+
+def test_t_valid_only_briefly_before_ack_keeps_full_settle():
+  # the pre-press trend needs a continuously valid window; a short one gives no reference
+  c, cs, cc, sp, plan, cs_sp = env = _pending_press(DEC, t=0)
+  cs_sp.leafAdasRequestT = 2500
+  c.update_leaf_t(cs_sp)
+  assert len(c.leaf_t_history) < LEAF_T_TREND_FRAMES
+  buttons = _after_ack(env, lambda i: 2500 if i == 0 else 2560)
+  assert _first(buttons, DEC) == _full_settle(DEC)
+
+
+@pytest.mark.parametrize('recover', [False, True])
+def test_t_lost_mid_settle_keeps_full_settle(recover):
+  env = _pending_press(DEC)
+  def t_after(i):
+    if i == 0:
+      return 2500
+    if 10 <= i < 15 or (i >= 15 and not recover):
+      return 0
+    return 2560
+  buttons = _after_ack(env, t_after)
+  assert _first(buttons, DEC) == _full_settle(DEC)
+
+
+def _closed_loop(t_at, frames=400):
+  """REVIEW S2 scenario: 80 -> 40 km/h SP target, OEM acknowledges each press 40 ms later. Returns press frames."""
+  c, cs, cc, sp, plan = setup(target=80.)
+  sp.vTarget = 40 / 3.6
+  plan.aTarget = 0.
+  cs_sp = custom.CarStateSP()
+  presses, acks = [], []
+  cluster, pending, prev = 80, None, NONE
+  for i in range(frames):
+    if pending is not None and i >= pending:
+      cluster -= 5
+      cs.cruiseState.speedCluster = cluster / 3.6
+      acks.append(i)
+      pending = None
+    if t_at is not None:
+      cs_sp.leafAdasRequestT = t_at(i, acks)
+    c.run(cs, cc, sp, True, plan, plan_valid=True, CS_SP=cs_sp if t_at is not None else None)
+    if c.cruise_button == DEC and prev != DEC:
+      presses.append(i)
+      pending = i + 4
+    prev = c.cruise_button
+  return presses
+
+
+def _step_response(i, acks, counts=60, delay=10):
+  """T steps up `counts` once per acknowledged press, `delay` frames after the ack."""
+  return counts * sum(i >= a + delay for a in acks)
+
+
+def test_ambient_t_ramp_does_not_speed_up_pressing():
+  # S2: T rising steadily for reasons unrelated to the press (+2 counts/frame) must not confirm presses
+  baseline = _closed_loop(None)
+  ramp = _closed_loop(lambda i, acks: 2530 + 2 * i)
+  assert ramp == baseline
+  assert all(b - a >= LEAF_SETTLE_FRAMES for a, b in zip(ramp, ramp[1:], strict=False))
+
+
+def test_genuine_step_response_still_releases_early():
+  baseline = _closed_loop(None)
+  step = _closed_loop(lambda i, acks: 2530 + _step_response(i, acks))
+  assert len(step) > len(baseline)
+  assert all(b - a < LEAF_SETTLE_FRAMES / 2 for a, b in zip(step, step[1:], strict=False))
+
+
+def test_step_response_on_top_of_ambient_ramp_still_releases_early():
+  ramp_and_step = _closed_loop(lambda i, acks: 2530 + 2 * i + _step_response(i, acks))
+  assert all(b - a < LEAF_SETTLE_FRAMES / 2 for a, b in zip(ramp_and_step, ramp_and_step[1:], strict=False))
+
+
+def test_falling_ambient_trend_is_not_credited_to_a_decrease_press():
+  # T was falling before the press and merely levels off afterwards: not a braking response
+  c, cs, cc, sp, plan = setup(target=60.)
+  sp.vTarget = 45 / 3.6
+  cs_sp = custom.CarStateSP()
+  frame = 0
+  while c.leaf_pending is None:
+    cs_sp.leafAdasRequestT = 2800 - 3 * frame
+    c.run(cs, cc, sp, True, plan, plan_valid=True, CS_SP=cs_sp)
+    frame += 1
+  level = cs_sp.leafAdasRequestT
+  buttons = _after_ack((c, cs, cc, sp, plan, cs_sp), lambda i: level)
+  assert _first(buttons, DEC) == _full_settle(DEC)
+
+
+def test_ack_timeout_clears_reference():
+  c, cs, cc, sp, plan, cs_sp = _pending_press(DEC)
+  c.leaf_t_ref = LeafTReference(t0=2500, sign=1, drift=0., ack_frame=c.leaf_frame)  # stale leftover
+  buttons, timeout_frame = [], None
+  for i in range(250):
+    cs_sp.leafAdasRequestT = 2500 if timeout_frame is None else 2600
+    c.run(cs, cc, sp, True, plan, plan_valid=True, CS_SP=cs_sp)
+    buttons.append(c.cruise_button)
+    if timeout_frame is None and c.leaf_pending is None:
+      assert c.leaf_t_ref is None
+      timeout_frame = i
+  # no acknowledgement: full settle from the timeout even though T then moved strongly
+  assert _first(buttons[timeout_frame + 1:], DEC) == LEAF_SETTLE_FRAMES - 1
+
+
+def test_target_direction_change_clears_reference():
+  c, cs, cc, sp, plan = setup(target=60.)
+  plan.aTarget = 0.
+  sp.vTarget = 55 / 3.6
+  cs_sp = custom.CarStateSP(leafAdasRequestT=2500)
+  tick(c, cs, cc, sp, plan, CS_SP=cs_sp)
+  assert c.leaf_pending is not None and c.leaf_pending[2] == DEC
+  c.leaf_t_ref = LeafTReference(t0=2400, sign=-1, drift=0., ack_frame=c.leaf_frame)  # stale leftover
+  sp.vTarget = 65 / 3.6
+  cs_sp.leafAdasRequestT = 2300  # would "confirm" the leftover increase reference
+  buttons = tick(c, cs, cc, sp, plan, frames=250, CS_SP=cs_sp)
+  assert c.leaf_t_ref is None
+  assert _first(buttons, INC) == _full_settle(INC)
+
+
+def test_driver_button_mid_settle_resets_reference():
+  env = _pending_press(DEC)
+  c, cs = env[0], env[1]
+  def hook(i):  # driver taps SET- 50 ms into the settle
+    cs.buttonEvents = [structs.CarState.ButtonEvent(type='decelCruise', pressed=i == 5)] if i in (5, 6) else []
+  buttons = _after_ack(env, lambda i: 2500 + (40 if i > 0 else 0), hook=hook)
+  assert c.leaf_t_ref is None
+  assert _first(buttons, DEC) >= 5 + LEAF_SETTLE_FRAMES
+
+
+def test_opposite_cluster_change_is_not_an_ack():
+  # N1: a decrease press followed by the cluster moving up is an external change
+  env = _pending_press(DEC)
+  c = env[0]
+  refs = []
+  buttons = _after_ack(env, lambda i: 2500 + (80 if i > 0 else 0), moved=5,
+                       hook=lambda i: refs.append(c.leaf_t_ref is None))
+  assert all(refs[1:LEAF_SETTLE_FRAMES])  # no reference was ever taken
+  assert _first(buttons, DEC) == _full_settle(DEC)
+
+
+def test_reference_cleared_when_settle_expires():
+  # N7/D2: no early release, the settle expires, and the reference is gone with it
+  env = _pending_press(DEC)
+  c = env[0]
+  refs = []
+  _after_ack(env, lambda i: 2500, frames=LEAF_SETTLE_FRAMES + 1, hook=lambda i: refs.append(c.leaf_t_ref is not None))
+  assert all(refs[1:LEAF_SETTLE_FRAMES])  # held through the settle (hook runs before each frame)
+  assert c.leaf_t_ref is None
+
+
+def test_early_release_without_further_demand_sends_nothing():
+  c, cs, cc, sp, plan = setup(target=60.)
+  plan.aTarget = 0.
+  sp.vTarget = 55 / 3.6
+  cs_sp = custom.CarStateSP(leafAdasRequestT=2500)
+  tick(c, cs, cc, sp, plan, CS_SP=cs_sp)
+  assert c.leaf_pending is not None
+  buttons = _after_ack((c, cs, cc, sp, plan, cs_sp), lambda i: 2500 + (40 if i > 0 else 0), frames=60)
+  assert all(b == NONE for b in buttons)
+  assert c.leaf_t_ref is None and c.leaf_pending is None
+
+
+@pytest.mark.parametrize('fault', ['none', 'invalid', 'old', 'future'])
+def test_car_state_sp_freshness(fault):
+  # N3: selfdrived passes carStateSP to ICBM only when this holds
+  sm = type('SM', (dict,), {})(carStateSP=custom.CarStateSP())
+  sm.logMonoTime = {'carStateSP': 100_000_000_000}
+  sm.all_checks = lambda **kw: fault != 'invalid' and kw == {'service_list': ['carStateSP']}
+  if fault == 'old':
+    sm.logMonoTime['carStateSP'] -= 100_000_000
+  elif fault == 'future':
+    sm.logMonoTime['carStateSP'] += 100_000_000
+  assert car_state_sp_valid(sm, 100.01) == (fault == 'none')
+
+
+def test_non_planner_car_ignores_t():
+  c, cs, cc, sp, plan = setup(car=CAR.NISSAN_XTRAIL)
+  tick(c, cs, cc, sp, plan, CS_SP=custom.CarStateSP(leafAdasRequestT=2500))
+  assert c.leaf_t == 0 and not c.leaf_t_history
+
+
+def test_leaf_adas_request_t_survives_capnp_conversion():
+  from openpilot.selfdrive.car.helpers import convert_to_capnp
+  assert convert_to_capnp(structs.CarStateSP(leafAdasRequestT=3415)).leafAdasRequestT == 3415
+
+
+# ---- S3: planner-mode standstill RES suppression (FIXES.md item 10) ----
+
+def _standstill(car):
+  c, cs, cc, sp, plan = setup(car=car, speed=0., target=30.)
+  sp.vTarget = 60 / 3.6
+  plan.aTarget = 0.
+  cs.standstill = True
+  return c, cs, cc, sp, plan
+
+
+def test_planner_standstill_sends_no_res():
+  c, cs, cc, sp, plan = _standstill(CAR.NISSAN_LEAF_IC)
+  assert INC not in tick(c, cs, cc, sp, plan, frames=300)
+  # moving again: RES resumes through the normal pacing (confirm, ack, settle)
+  cs.standstill = False
+  cs.vEgo = 10 / 3.6
+  assert INC in tick(c, cs, cc, sp, plan, frames=300)
+
+
+def test_non_planner_standstill_res_unchanged():
+  c, cs, cc, sp, plan = _standstill(CAR.NISSAN_XTRAIL)
+  buttons = tick(c, cs, cc, sp, plan, frames=300)
+  assert INC in buttons

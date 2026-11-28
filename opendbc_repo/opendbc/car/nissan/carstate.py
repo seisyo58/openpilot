@@ -5,7 +5,7 @@ from opendbc.car import Bus, create_button_events, structs
 from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.interfaces import CarStateBase
 from opendbc.car.nissan.values import CAR, DBC, CarControllerParams
-from opendbc.sunnypilot.car.nissan.carstate_ext import CarStateExt
+from opendbc.sunnypilot.car.nissan.carstate_ext import CarStateExt, leaf_cam_messages
 
 ButtonType = structs.CarState.ButtonEvent.Type
 
@@ -145,6 +145,6 @@ class CarState(CarStateBase, CarStateExt):
   def get_can_parsers(CP, CP_SP):
     return {
       Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 1 if CP.carFingerprint == CAR.NISSAN_ALTIMA else 0),
-      Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 0 if CP.carFingerprint == CAR.NISSAN_ALTIMA else 1),
+      Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], leaf_cam_messages(CP), 0 if CP.carFingerprint == CAR.NISSAN_ALTIMA else 1),
       Bus.adas: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 2),
     }
